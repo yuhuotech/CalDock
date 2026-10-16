@@ -456,6 +456,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     @objc private func quit() { NSApp.terminate(nil) }
     @objc private func about() {
         NSApp.activate(ignoringOtherApps: true)
-        NSApp.orderFrontStandardAboutPanel(options: [.applicationName: "CalDock", .applicationVersion: "0.1.0", .credits: NSAttributedString(string: "轻巧的原生菜单栏日历\n农历 · 节气 · 系统日程")])
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        NSApp.orderFrontStandardAboutPanel(options: [.applicationName: "CalDock", .applicationVersion: version, .credits: NSAttributedString(string: "轻巧的原生菜单栏日历\n农历 · 节气 · 系统日程")])
     }
 }

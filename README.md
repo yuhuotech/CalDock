@@ -101,7 +101,17 @@ CALDOCK_NOTARY_PROFILE='your-keychain-profile' bash scripts/release.sh
 
 ## GitHub Actions 打包
 
-[macOS build](https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml) 在推送 `main`、`v*` 标签或手动运行时，先测试，再构建 Universal 应用、Developer ID 签名、Apple 公证和装订，最后从解压后的发布包复核签名和票据。PR 只测试，不读取签名材料。成功后在该次运行的 Artifacts 下载 `CalDock-macos-universal-*`，解压外层 Artifact 后可取得发布 ZIP 和 SHA256。
+[macOS build](https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml) 仅在推送 `v*` 版本标签时打包：先测试，再构建 Universal 应用、Developer ID 签名、Apple 公证和装订，最后从解压后的发布包复核签名和票据。`main` 推送和 PR 只测试，不读取签名材料。成功后在该次运行的 Artifacts 下载 `CalDock-<版本>-macos-universal`，其中包含同名发布 ZIP 和 `.zip.sha256`；Universal 同时支持 Apple Silicon / arm64 和 Intel / x86_64。
+
+发布新版本时，先同步修改 `Resources/Info.plist` 和 `Resources/Widget-Info.plist` 的 `CFBundleShortVersionString`，并递增两者的 `CFBundleVersion`，完整提交并推送后创建对应标签。例如当前 `0.1.0`：
+
+```sh
+git push origin main
+git tag -a v0.1.0 -m "CalDock 0.1.0"
+git push origin v0.1.0
+```
+
+工作流校验标签、主程序和 Widget 的版本一致后才读取密钥。当前文件名为 `CalDock-0.1.0-macos-universal.zip`，校验文件为 `CalDock-0.1.0-macos-universal.zip.sha256`。本机运行发布脚本也使用相同命名。
 
 仓库 Settings → Secrets and variables → Actions 需要以下配置：
 

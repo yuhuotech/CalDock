@@ -7,7 +7,7 @@ if [[ "$configuration" != "release" && "$configuration" != "debug" ]]; then
     exit 1
 fi
 swift build -c "$configuration" --arch arm64 --arch x86_64
-bin_dir="$(swift build -c "$configuration" --show-bin-path)"
+bin_dir="$(swift build -c "$configuration" --arch arm64 --arch x86_64 --show-bin-path)"
 app_dir="$PWD/build/CalDock.app"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$bin_dir/CalDock" "$app_dir/Contents/MacOS/CalDock"
@@ -45,8 +45,19 @@ if [[ -z "$sign_identity" ]]; then
 fi
 sign_flags=()
 if [[ "$sign_identity" != "-" ]]; then sign_flags=(--options runtime --timestamp); fi
-codesign --force --sign "$sign_identity" "${sign_flags[@]}" --entitlements Resources/Widget.entitlements "$widget_dir"
-codesign --force --sign "$sign_identity" "${sign_flags[@]}" --entitlements Resources/CalDock.entitlements "$app_dir"
+sign_bundle() {
+    local attempt
+    for attempt in 1 2 3; do
+        if codesign --force --sign "$sign_identity" "${sign_flags[@]}" "$@"; then return 0; fi
+        if [[ "$attempt" -lt 3 ]]; then
+            printf 'Signing failed; retrying with timestamp requirements unchanged (%s/3).\n' "$attempt" >&2
+            sleep "$((attempt * 3))"
+        fi
+    done
+    return 1
+}
+sign_bundle --entitlements Resources/Widget.entitlements "$widget_dir"
+sign_bundle --entitlements Resources/CalDock.entitlements "$app_dir"
 touch "$app_dir"
 python3 scripts/verify-bundle.py "$app_dir"
 printf '\nBuilt: %s\nOpen: open "%s"\n' "$app_dir" "$app_dir"

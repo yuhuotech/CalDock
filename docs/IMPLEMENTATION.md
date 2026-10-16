@@ -35,9 +35,10 @@
 - 早期修复后运行取样：`ps` 空闲 CPU 0.0%，`footprint` 约 51 MB（已打开过日历和设置）。紧凑版一次早期 20 秒样本包含启动/首次分钟更新，平均单核 CPU 为 2.249%，随后 `ps` 为 0.0%；`sample` 的主线程全部处于等待系统事件，物理内存约 45–52 MB。进一步对显示内容去重，默认只显示图标时跨分钟不重绘。最终空闲取样见 `build/idle-metrics.json`。不是长时间耗电基准。
 - 最终月历窗口实测约 280×276 pt；日历、农历和角标均可见，未裁切。四页工具栏与标题处于同一顶部栏。
 - 最终构建空闲 15 秒样本：CPU 时间从 0.10 秒保持为 0.10 秒，平均单核 CPU 为 0.0%，RSS 保持 69.33 MiB。样本在 `build/idle-metrics.json`；RSS 与物理内存 footprint 为不同统计口径。
-- 最终交付：`/Applications/CalDock.app`，压缩包 `build/CalDock-macos-universal.zip`；包名 `com.yuhuo.caldock`。
+- 本机安装：`/Applications/CalDock.app`；包名 `com.yuhuo.caldock`。发布脚本现按应用版本命名，例如 `build/CalDock-0.1.0-macos-universal.zip`；早期本机公证记录中的 ZIP 名称和哈希保留原始值。
 - 最终正常启动后的 60 秒空闲样本：CPU 时间 0.11 → 0.11 秒，平均 CPU 0.0%，RSS 71.95 → 71.91 MiB。冷启动收起状态 footprint 约 15 MB；设置/日历打开后的值另见压力测试，不能混为应用全部场景的内存。
 - 日历和通知已获用户授权。临时事件与日历清理成功；登录项测试后恢复原状态；不在日志或验收报告中输出用户日程内容。
 - 小组件曾因缺少 `_NSExtensionMain` 链接入口而启动失败，现已修复，加入二进制入口校验；系统 placeholder 和 snapshot 三种尺寸均成功，用户确认能搜索并看到预览。
 - 用户随后配置 `caldock-notary`，Apple 公证已通过（Accepted），提交 ID `1ce48452-e324-4535-a647-7efa5c998add`，无 issues。已装订票据；构建产物、/Applications 安装和最终 ZIP 解压出的应用均通过票据/签名验证，`spctl` 来源为 Notarized Developer ID。记录见 `verification/notarization-log.json`。
 - 多屏负坐标/小屏使用位置算法测试，唤醒和时区使用真实通知链注入；实际休眠、Intel 硬件及其他 macOS 版本未作为本机已实测结果。本机没有 Rosetta，已确认 x86_64 构建包含在 Universal 产物。
+- GitHub Actions：`main`/PR 只测试，仅 `v*` 标签推送打包；标签必须匹配主程序和扩展版本。签名材料通过仓库 Secrets 注入临时钥匙串，团队和签名身份使用 Variables；只上传公证后的 ZIP、SHA256 及公证报告。

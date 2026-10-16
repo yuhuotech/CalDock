@@ -28,4 +28,6 @@
 - 已定位命令行直接执行时 TCC 归属不同的问题：系统验收一律使用 `open -W ... --args --verify-system`，不改动或绕过 TCC。
 - 用户补齐钥匙串公证凭据 `caldock-notary` 后，完成 Apple 公证并装订票据。提交 `1ce48452-e324-4535-a647-7efa5c998add`，状态 Accepted、Ready for distribution、issues=null。本机安装与发布 ZIP 解压复核均通过，应用已重新启动。
 - 发布 ZIP SHA-256：`7c04f3912e5ad052d973f5f46d157d862af3bca0410207911e46648224e6ed5b`。
-- 本机签名公证已完成；用户另提出完整签名材料包（CSR、cer、p12、导出密码、base64、App 专用密码）的预期。可迁移的私钥备份需单独整理，尚未导出或向仓库写入任何秘密。
+- 本机签名公证已完成；复用了同团队已有证书，将 CSR、cer、p12、导出密码、base64 备份整理到用户指定的仓库外目录，保留 CalDock 自己的 App 专用密码。私钥和密码不进入仓库。
+- 已通过 `gh` 配置 4 项仓库 Secrets 和 2 项 Variables，专用密码经 Apple 实际验证有效。工作流仅在 `v*` 标签推送时打包，`main` 和 PR 只测试；文件名包含 CalDock、应用版本、macos 和 universal。主程序、Widget、标签版本不一致时在读取密钥前报错。
+- 首轮云端 14 项测试通过；发现跨架构构建后的路径查询遗漏架构参数，已补齐同一组 `--arch` 参数，避免在不同 SwiftPM/Xcode 版本中误取单架构目录。
