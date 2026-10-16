@@ -356,21 +356,21 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let color: NSColor = p.iconMode == "light" ? .white : .black
         let image = NSImage(size: NSSize(width: 22, height: 22), flipped: false) { rect in
             color.setStroke()
-            let outline = NSBezierPath(roundedRect: NSRect(x: 2.5, y: 2.5, width: 17, height: 16.5), xRadius: 2, yRadius: 2)
+            let outline = NSBezierPath(roundedRect: NSRect(x: 3, y: 3.5, width: 16, height: 14), xRadius: 2, yRadius: 2)
             outline.lineWidth = 1.5; outline.stroke()
             let line = NSBezierPath()
             line.lineWidth = 1.5
-            line.move(to: NSPoint(x: 3, y: 15.5)); line.line(to: NSPoint(x: 19, y: 15.5))
-            for x in [7.0, 15.0] { line.move(to: NSPoint(x: x, y: 18)); line.line(to: NSPoint(x: x, y: 21)) }
+            line.move(to: NSPoint(x: 3.5, y: 14.5)); line.line(to: NSPoint(x: 18.5, y: 14.5))
+            for x in [7.0, 15.0] { line.move(to: NSPoint(x: x, y: 16.5)); line.line(to: NSPoint(x: x, y: 19.5)) }
             line.stroke()
             if p.iconStyle == "date" {
                 let text = "\(day)" as NSString
-                let attrs: [NSAttributedString.Key: Any] = [.font: NSFont.monospacedDigitSystemFont(ofSize: 11.5, weight: .semibold), .foregroundColor: color]
+                let attrs: [NSAttributedString.Key: Any] = [.font: NSFont.monospacedDigitSystemFont(ofSize: 10.5, weight: .semibold), .foregroundColor: color]
                 let size = text.size(withAttributes: attrs)
-                text.draw(at: NSPoint(x: (rect.width - size.width) / 2, y: 2.2), withAttributes: attrs)
+                text.draw(at: NSPoint(x: (rect.width - size.width) / 2, y: 3.4), withAttributes: attrs)
             } else {
                 color.setFill()
-                for x in [7.0, 11.0, 15.0] { for y in [6.0, 10.0] { NSBezierPath(ovalIn: NSRect(x: x - 1, y: y - 1, width: 2, height: 2)).fill() } }
+                for x in [7.0, 11.0, 15.0] { for y in [7.0, 10.5] { NSBezierPath(ovalIn: NSRect(x: x - 1, y: y - 1, width: 2, height: 2)).fill() } }
             }
             return true
         }
