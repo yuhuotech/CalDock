@@ -10,18 +10,29 @@ if [[ -n "${CALDOCK_NOTARY_KEYCHAIN:-}" ]]; then
 fi
 bash scripts/build-app.sh release
 archive="$PWD/build/$release_name.zip"
+disk_image="$PWD/build/$release_name.dmg"
+notarize() {
+    local package="$1" report="$2" submit_status=0 submission_id
+    xcrun notarytool submit "$package" "${notary_credentials[@]}" --wait --output-format json > "$report.json" || submit_status=$?
+    submission_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("id", ""))' "$report.json" 2>/dev/null || true)"
+    if [[ -n "$submission_id" ]]; then
+        xcrun notarytool log "$submission_id" "${notary_credentials[@]}" "$report-log.json" || true
+    fi
+    if [[ "$submit_status" -ne 0 ]]; then return "$submit_status"; fi
+    python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); print("Notarization:",r.get("status")); assert r.get("status")=="Accepted",r' "$report.json"
+}
 ditto -c -k --sequesterRsrc --keepParent build/CalDock.app "$archive"
-submit_status=0
-xcrun notarytool submit "$archive" "${notary_credentials[@]}" --wait --output-format json > build/notarization.json || submit_status=$?
-submission_id="$(python3 -c 'import json; print(json.load(open("build/notarization.json")).get("id", ""))' 2>/dev/null || true)"
-if [[ -n "$submission_id" ]]; then
-    xcrun notarytool log "$submission_id" "${notary_credentials[@]}" build/notarization-log.json || true
-fi
-if [[ "$submit_status" -ne 0 ]]; then exit "$submit_status"; fi
-python3 -c 'import json; r=json.load(open("build/notarization.json")); print("Notarization:",r.get("status")); assert r.get("status")=="Accepted",r'
+notarize "$archive" build/notarization
 xcrun stapler staple build/CalDock.app
 xcrun stapler validate build/CalDock.app
 spctl --assess --type execute --verbose=2 build/CalDock.app
 ditto -c -k --sequesterRsrc --keepParent build/CalDock.app "$archive"
-(cd build && shasum -a 256 "$release_name.zip" > "$release_name.zip.sha256")
-printf 'Release: %s\n' "$archive"
+python3 scripts/create-dmg.py build/CalDock.app "$disk_image"
+codesign --force --sign "$CALDOCK_SIGN_IDENTITY" --timestamp "$disk_image"
+notarize "$disk_image" build/notarization-dmg
+xcrun stapler staple "$disk_image"
+xcrun stapler validate "$disk_image"
+for extension in zip dmg; do
+    (cd build && shasum -a 256 "$release_name.$extension" > "$release_name.$extension.sha256")
+done
+printf 'Release: %s\nRelease: %s\n' "$archive" "$disk_image"

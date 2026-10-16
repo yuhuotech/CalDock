@@ -35,7 +35,7 @@
 - 早期修复后运行取样：`ps` 空闲 CPU 0.0%，`footprint` 约 51 MB（已打开过日历和设置）。紧凑版一次早期 20 秒样本包含启动/首次分钟更新，平均单核 CPU 为 2.249%，随后 `ps` 为 0.0%；`sample` 的主线程全部处于等待系统事件，物理内存约 45–52 MB。进一步对显示内容去重，默认只显示图标时跨分钟不重绘。最终空闲取样见 `build/idle-metrics.json`。不是长时间耗电基准。
 - 最终月历窗口实测约 280×276 pt；日历、农历和角标均可见，未裁切。四页工具栏与标题处于同一顶部栏。
 - 最终构建空闲 15 秒样本：CPU 时间从 0.10 秒保持为 0.10 秒，平均单核 CPU 为 0.0%，RSS 保持 69.33 MiB。样本在 `build/idle-metrics.json`；RSS 与物理内存 footprint 为不同统计口径。
-- 本机安装：`/Applications/CalDock.app`；包名 `com.yuhuo.caldock`。发布脚本现按应用版本命名，例如 `build/CalDock-0.1.0-macos-universal.zip`；早期本机公证记录中的 ZIP 名称和哈希保留原始值。
+- 本机安装：`/Applications/CalDock.app`；包名 `com.yuhuo.caldock`。发布脚本现按应用版本命名，例如 `build/CalDock-universal-0.1.0.zip` 和 `build/CalDock-universal-0.1.0.dmg`；早期本机及云端公证记录中的文件名和哈希保留原始值。
 - 最终正常启动后的 60 秒空闲样本：CPU 时间 0.11 → 0.11 秒，平均 CPU 0.0%，RSS 71.95 → 71.91 MiB。冷启动收起状态 footprint 约 15 MB；设置/日历打开后的值另见压力测试，不能混为应用全部场景的内存。
 - 日历和通知已获用户授权。临时事件与日历清理成功；登录项测试后恢复原状态；不在日志或验收报告中输出用户日程内容。
 - 小组件曾因缺少 `_NSExtensionMain` 链接入口而启动失败，现已修复，加入二进制入口校验；系统 placeholder 和 snapshot 三种尺寸均成功，用户确认能搜索并看到预览。

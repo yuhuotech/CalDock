@@ -21,9 +21,10 @@ for key in ("CFBundleShortVersionString", "CFBundleVersion"):
 if os.environ.get("GITHUB_ACTIONS") == "true":
     if os.environ.get("GITHUB_REF_TYPE") != "tag":
         parser.error("GitHub packaging requires a version tag")
-    if os.environ.get("GITHUB_REF_NAME") != f"v{version}":
-        parser.error(f"Tag must be v{version} to match the app version")
-name = f"CalDock-{version}-macos-universal"
+    tag_pattern = re.escape(f"v{version}") + r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+    if not re.fullmatch(tag_pattern, os.environ.get("GITHUB_REF_NAME", "")):
+        parser.error(f"Tag must be v{version} (optionally with +build metadata) to match the app version")
+name = f"CalDock-universal-{version}"
 if args.github_output:
     with args.github_output.open("a") as output:
         output.write(f"version={version}\nname={name}\n")
