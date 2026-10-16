@@ -39,5 +39,5 @@
 - 最终正常启动后的 60 秒空闲样本：CPU 时间 0.11 → 0.11 秒，平均 CPU 0.0%，RSS 71.95 → 71.91 MiB。冷启动收起状态 footprint 约 15 MB；设置/日历打开后的值另见压力测试，不能混为应用全部场景的内存。
 - 日历和通知已获用户授权。临时事件与日历清理成功；登录项测试后恢复原状态；不在日志或验收报告中输出用户日程内容。
 - 小组件曾因缺少 `_NSExtensionMain` 链接入口而启动失败，现已修复，加入二进制入口校验；系统 placeholder 和 snapshot 三种尺寸均成功，用户确认能搜索并看到预览。
-- 公证凭据与 Apple 公证由用户明确要求暂缓；提供 `scripts/release.sh`，实际运行时必须等待 Accepted 才装订并生成发布包。
+- 用户随后配置 `caldock-notary`，Apple 公证已通过（Accepted），提交 ID `1ce48452-e324-4535-a647-7efa5c998add`，无 issues。已装订票据；构建产物、/Applications 安装和最终 ZIP 解压出的应用均通过票据/签名验证，`spctl` 来源为 Notarized Developer ID。记录见 `verification/notarization-log.json`。
 - 多屏负坐标/小屏使用位置算法测试，唤醒和时区使用真实通知链注入；实际休眠、Intel 硬件及其他 macOS 版本未作为本机已实测结果。本机没有 Rosetta，已确认 x86_64 构建包含在 Universal 产物。

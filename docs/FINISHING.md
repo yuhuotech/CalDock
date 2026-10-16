@@ -26,3 +26,6 @@
 - 最终正常启动后空闲 60 秒：CPU 时间 0.11 → 0.11 秒，平均 CPU 0.0%，RSS 71.95 → 71.91 MiB；主进程冷启动、收起状态的 footprint 约 15 MB。该数据不代表已长期打开设置/小组件后的所有进程总内存。
 - 最终 Universal 应用约 6.2 MB，压缩包约 2.3 MB；已安装 `/Applications/CalDock.app`，并通过主程序和嵌套扩展签名/资源/入口校验。
 - 已定位命令行直接执行时 TCC 归属不同的问题：系统验收一律使用 `open -W ... --args --verify-system`，不改动或绕过 TCC。
+- 用户补齐钥匙串公证凭据 `caldock-notary` 后，完成 Apple 公证并装订票据。提交 `1ce48452-e324-4535-a647-7efa5c998add`，状态 Accepted、Ready for distribution、issues=null。本机安装与发布 ZIP 解压复核均通过，应用已重新启动。
+- 发布 ZIP SHA-256：`7c04f3912e5ad052d973f5f46d157d862af3bca0410207911e46648224e6ed5b`。
+- 本机签名公证已完成；用户另提出完整签名材料包（CSR、cer、p12、导出密码、base64、App 专用密码）的预期。可迁移的私钥备份需单独整理，尚未导出或向仓库写入任何秘密。

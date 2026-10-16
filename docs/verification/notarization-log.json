@@ -1,0 +1,67 @@
+{
+  "logFormatVersion": 1,
+  "jobId": "1ce48452-e324-4535-a647-7efa5c998add",
+  "status": "Accepted",
+  "statusSummary": "Ready for distribution",
+  "statusCode": 0,
+  "archiveFilename": "CalDock-macos-universal.zip",
+  "uploadDate": "2026-10-16T14:02:49.228Z",
+  "sha256": "21557e945914a02ef85ae6fbbdd1399d3cb2a916976afec1c04ef67c29039c4b",
+  "ticketContents": [
+    {
+      "path": "CalDock-macos-universal.zip/CalDock.app/Contents/Resources/CalDock_CalendarCore.bundle",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "04b6ac72e32dc7c1b92a4c23fabc03b3d1c553a4",
+      "arch": null
+    },
+    {
+      "path": "CalDock-macos-universal.zip/CalDock.app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "cec0fc26a531eec82e4117cf1b01945d271e9259",
+      "arch": "x86_64"
+    },
+    {
+      "path": "CalDock-macos-universal.zip/CalDock.app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "9ab31d1a6f1b4340b8d333a2d36e03f3acaeb157",
+      "arch": "arm64"
+    },
+    {
+      "path": "CalDock-macos-universal.zip/CalDock.app/Contents/PlugIns/CalDockWidget.appex",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "db311c8dccb8c6b6c693fda7c06428a79bf4bff9",
+      "arch": "x86_64"
+    },
+    {
+      "path": "CalDock-macos-universal.zip/CalDock.app/Contents/PlugIns/CalDockWidget.appex",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "71da7b7682a32d5223e33167821d0086c195f765",
+      "arch": "arm64"
+    },
+    {
+      "path": "CalDock-macos-universal.zip/CalDock.app/Contents/MacOS/CalDock",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "cec0fc26a531eec82e4117cf1b01945d271e9259",
+      "arch": "x86_64"
+    },
+    {
+      "path": "CalDock-macos-universal.zip/CalDock.app/Contents/MacOS/CalDock",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "9ab31d1a6f1b4340b8d333a2d36e03f3acaeb157",
+      "arch": "arm64"
+    },
+    {
+      "path": "CalDock-macos-universal.zip/CalDock.app/Contents/PlugIns/CalDockWidget.appex/Contents/MacOS/CalDockWidget",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "db311c8dccb8c6b6c693fda7c06428a79bf4bff9",
+      "arch": "x86_64"
+    },
+    {
+      "path": "CalDock-macos-universal.zip/CalDock.app/Contents/PlugIns/CalDockWidget.appex/Contents/MacOS/CalDockWidget",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "71da7b7682a32d5223e33167821d0086c195f765",
+      "arch": "arm64"
+    }
+  ],
+  "issues": null
+}

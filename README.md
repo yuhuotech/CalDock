@@ -20,7 +20,7 @@ bash scripts/install-app.sh
 open /Applications/CalDock.app
 ```
 
-已在本机使用 Developer ID 签名和 Hardened Runtime，主程序与 Widget 均为 arm64 / x86_64 Universal。公证按用户要求暂时跳过。构建脚本自动选择当前团队的 Developer ID，缺少证书时明确报错；设置 `CALDOCK_SIGN_IDENTITY` 可选择证书。`CALDOCK_SIGN_IDENTITY=-` 仅供隔离开发，不保证 App Group 共享及已有系统授权可用。
+已完成 Developer ID 签名、Hardened Runtime 和 Apple 公证，票据已装订；主程序与 Widget 均为 arm64 / x86_64 Universal。公证凭据使用本机钥匙串配置 `caldock-notary`，不保存在仓库中。构建脚本自动选择当前团队的 Developer ID，缺少证书时明确报错；设置 `CALDOCK_SIGN_IDENTITY` 可选择证书。`CALDOCK_SIGN_IDENTITY=-` 仅供隔离开发，不保证 App Group 共享及已有系统授权可用。
 
 - 点击菜单栏的当日日期图标打开月历，右键打开设置、关于与退出菜单。
 - 默认全局快捷键 `⌃⌘X`，在通用设置中可以重新录制。
@@ -105,4 +105,4 @@ CALDOCK_NOTARY_PROFILE='your-keychain-profile' bash scripts/release.sh
 
 2026 年调休数据来源：[国务院办公厅关于2026年部分节假日安排的通知](https://www.beijing.gov.cn/zhengce/zhengcefagui/202511/t20251104_4258873.html)，存放在 `Sources/CalendarCore/Resources/holidays.json`，后续年份需按正式公布的通知补充。节气使用太阳视黄经计算日期，不提供精确交节时刻。日历展示支持 1901–2099 年，使用本机时区。
 
-已完成真实日历读写/筛选/清理、通知送达/取消、登录项注册/注销以及共享设置的本机验收。多屏坐标覆盖负坐标和小屏边界测试；实际 Intel 硬件与其他 macOS 版本需要对应设备，不能将 Universal 编译成功当作这些硬件的实测结果。公证按用户要求暂缓。
+已完成真实日历读写/筛选/清理、通知送达/取消、登录项注册/注销以及共享设置的本机验收。多屏坐标覆盖负坐标和小屏边界测试；实际 Intel 硬件与其他 macOS 版本需要对应设备，不能将 Universal 编译成功当作这些硬件的实测结果。公证记录见 `docs/verification/notarization-log.json`。
