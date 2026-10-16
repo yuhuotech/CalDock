@@ -36,14 +36,14 @@ notarize() {
 ditto -c -k --sequesterRsrc --keepParent build/CalDock.app "$archive"
 notarize "$archive" build/notarization
 retry_apple_tool xcrun stapler staple build/CalDock.app
-xcrun stapler validate build/CalDock.app
-spctl --assess --type execute --verbose=2 build/CalDock.app
+retry_apple_tool xcrun stapler validate build/CalDock.app
+retry_apple_tool spctl --assess --type execute --verbose=2 build/CalDock.app
 ditto -c -k --sequesterRsrc --keepParent build/CalDock.app "$archive"
 python3 scripts/create-dmg.py build/CalDock.app "$disk_image"
 retry_apple_tool codesign --force --sign "$CALDOCK_SIGN_IDENTITY" --timestamp "$disk_image"
 notarize "$disk_image" build/notarization-dmg
 retry_apple_tool xcrun stapler staple "$disk_image"
-xcrun stapler validate "$disk_image"
+retry_apple_tool xcrun stapler validate "$disk_image"
 for extension in zip dmg; do
     (cd build && shasum -a 256 "$release_name.$extension" > "$release_name.$extension.sha256")
 done
