@@ -12,6 +12,7 @@ app_dir="$PWD/build/CalDock.app"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$bin_dir/CalDock" "$app_dir/Contents/MacOS/CalDock"
 cp Resources/Info.plist "$app_dir/Contents/Info.plist"
+cp LICENSE "$app_dir/Contents/Resources/CalDock-LICENSE.txt"
 swift scripts/generate-icon.swift build/CalDock.iconset
 iconutil -c icns build/CalDock.iconset -o "$app_dir/Contents/Resources/CalDock.icns"
 for bundle in "$bin_dir"/*.bundle; do

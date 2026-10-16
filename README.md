@@ -1,146 +1,130 @@
-# CalDock
+<p align="center"><img src="website/assets/app-icon.png" width="96" height="96" alt="CalDock 图标"></p>
+<h1 align="center">CalDock</h1>
+<p align="center">一眼知日期，轻巧在菜单栏。</p>
+<p align="center">为 macOS 打造的原生日历，公历、农历、节气与日程，随手可见。</p>
 
-轻巧的原生 macOS 菜单栏日历。Swift + AppKit + SwiftUI 实现；应用内更新使用 Sparkle，无 Electron、WebView 或额外常驻后台服务。
+<p align="center">
+  <a href="https://github.com/yuhuotech/CalDock/releases/latest"><img src="https://img.shields.io/github/v/release/yuhuotech/CalDock?color=d75c40" alt="最新版本"></a>
+  <img src="https://img.shields.io/badge/macOS-14%2B-294b49" alt="macOS 14 或以上">
+  <img src="https://img.shields.io/badge/Universal-Apple%20Silicon%20%2B%20Intel-597766" alt="支持 Apple Silicon 与 Intel">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-294b49" alt="MIT License"></a>
+  <a href="https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml"><img src="https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml/badge.svg" alt="构建状态"></a>
+</p>
 
-要求 macOS 14 或以上。Bundle ID：`com.yuhuo.caldock`。
+<p align="center">
+  <a href="https://caldock.yuhuotech.com">官网</a> ·
+  <a href="https://github.com/yuhuotech/CalDock/releases/latest">下载安装</a> ·
+  <a href="https://github.com/yuhuotech/CalDock/issues">反馈问题</a> ·
+  <a href="docs/DEVELOPMENT.md">开发指南</a>
+</p>
+
+## 简介
+
+CalDock 是一款免费、开源的 macOS 菜单栏日历。点击日期即可展开紧凑月历，也可以在全屏工作时通过快捷键呼出。它使用 Swift、AppKit 和 SwiftUI 构建，保持原生体验，关注空闲时的资源占用。
+
+## 界面预览
+
+<p align="center">
+  <img src="website/assets/calendar-light.png" width="280" alt="浅色月历，显示公历、农历与休班角标">
+  &nbsp;&nbsp;
+  <img src="website/assets/calendar-dark.png" width="280" alt="深色月历，显示同一月份与农历信息">
+</p>
+
+<details>
+  <summary>查看“关于与软件更新”页面</summary>
+  <p><img src="website/assets/about.png" width="500" alt="关于页面，包含版本、简介、手动检查及每小时自动检查选项"></p>
+</details>
+
+月历图片由实际 SwiftUI 视图导出；设置页为实际运行截图，不包含私人日程。
+
+## 特色
+
+- **原生、紧凑**：默认宽 280 pt 的六周月历，字号、行高和面板宽度可调整。
+- **中文日历**：公历、农历、传统节日、二十四节气及已收录年份的官方休假/补班标记。
+- **系统日程**：授权后查看事件圆点、当天议程，筛选日历并创建事件。
+- **菜单栏适配**：日期图标随明暗外观调整，也可固定颜色；日期、星期、时间等模块可开关、排序。
+- **全屏快捷呼出**：默认 `⌃⌘X`，支持自定义快捷键、悬停打开、固定面板及键盘导航。
+- **桌面小组件**：WidgetKit 小、中、大三种尺寸，共享显示设置，支持独立配色。
+- **更新与提醒**：可选节日前提醒、开机启动；支持手动更新和每小时自动检查，安装前需确认。
+- **本地与轻量**：日程仅在本机处理，无统计 SDK；收起面板后释放日历视图，不轮询日程。
+
+## 下载与安装
+
+要求 **macOS 14 或以上**，同一 Universal 安装包支持 Apple Silicon 与 Intel。
+
+1. 前往 [最新 Release](https://github.com/yuhuotech/CalDock/releases/latest)，下载 `CalDock-universal-X.Y.Z.dmg`。
+2. 打开 DMG，将 CalDock 拖入“应用程序”文件夹。
+3. 从“应用程序”启动 CalDock，点击菜单栏日期打开月历。
+
+也可下载 ZIP，解压后将应用移入“应用程序”。Release 同时提供 SHA256 校验文件。正式安装包经过 Developer ID 签名和 Apple 公证；macOS 正常的首次打开确认、日历或通知授权仍会保留。
+
+建议只保留一个正在运行的副本，避免从下载目录、DMG 和“应用程序”同时启动而出现重复图标。
 
 ## 使用
 
-构建并打开：
+| 操作 | 快捷方式 |
+| --- | --- |
+| 打开或收起月历 | 点击菜单栏图标，或 `⌃⌘X` |
+| 切换月份 | `←` / `→`，或点击月份箭头 |
+| 移动选中日期 | `↑` / `↓` 移动一周 |
+| 回到今天 | 空格 |
+| 展开 / 收起议程 | `A` |
+| 固定 / 取消固定面板 | `P` |
+| 打开设置 | `⌘,` |
+| 收起面板 | `Esc` |
+
+点击月份标题可跳转年月；按住 Option 点击月份箭头可切换年份；右键日期可复制或打开系统日历。右键菜单栏图标可进入设置、关于或退出。
+
+添加小组件：在桌面或通知中心选择“编辑小组件”，搜索 **CalDock**。
+
+### 软件更新
+
+在“设置 → 关于”查看当前版本和手动检查更新。启用“自动检查更新”后每小时检查一次，发现新版本会提示，由你确认后再下载、安装并重新打开。0.1.2 及更早版本需先手动安装包含更新功能的版本。
+
+## 隐私与资源占用
+
+日历和通知由你主动授权。日程不会上传；系统日历的同步由 macOS 自身管理。更新检查访问 GitHub 的签名更新源，关闭自动检查后只在手动点击时请求。CalDock 不包含广告、统计 SDK 或额外常驻后台服务。
+
+默认按分钟更新菜单栏；仅显示秒数时启用秒级更新。日程通过 EventKit 变更通知按可见范围读取；收起月历后停止视图刷新。具体资源占用与系统、日历数量和设置有关，验证方法见 [开发指南](docs/DEVELOPMENT.md)。
+
+## 从源码构建
+
+需要 macOS 和 Xcode。签名、App Group、系统权限与公证要求见 [开发与发布](docs/DEVELOPMENT.md)。
 
 ```sh
-bash scripts/build-app.sh
+git clone https://github.com/yuhuotech/CalDock.git
+cd CalDock
+swift test
+CALDOCK_SIGN_IDENTITY=- bash scripts/build-app.sh debug
 open build/CalDock.app
 ```
 
-安装到应用程序：
+临时签名仅适合隔离开发，不保证系统日历授权、共享容器及更新功能可用。正式分发请使用 Developer ID 签名与 Apple 公证。
 
-```sh
-bash scripts/install-app.sh
-open /Applications/CalDock.app
-```
+## 常见问题
 
-已完成 Developer ID 签名、Hardened Runtime 和 Apple 公证，票据已装订；主程序与 Widget 均为 arm64 / x86_64 Universal。公证凭据使用本机钥匙串配置 `caldock-notary`，不保存在仓库中。构建脚本自动选择当前团队的 Developer ID，缺少证书时明确报错；设置 `CALDOCK_SIGN_IDENTITY` 可选择证书。`CALDOCK_SIGN_IDENTITY=-` 仅供隔离开发，不保证 App Group 共享及已有系统授权可用。
+**全屏时为什么看不到菜单栏图标？**
 
-- 点击菜单栏的当日日期图标打开月历，右键打开设置、关于与退出菜单。
-- 默认全局快捷键 `⌃⌘X`，在通用设置中可以重新录制。
-- 面板内 `←` / `→` 切换月份，`↑` / `↓` 移动日期一周，空格回到今天，Esc 关闭。
-- 点击月份标题跳转年月；按住 Option 点击月份箭头可切换年份。
-- `A` 展开或收起日程，`P` 固定面板，`⌘,` 打开设置。
-- 右键某天可复制日期或打开系统日历。
+如果 macOS 隐藏整个菜单栏，图标也会暂时隐藏。使用 `⌃⌘X` 可在全屏空间中呼出月历。刘海屏图标被挤出时，可以按住 `⌘` 拖动图标或减少状态栏显示模块。
 
-## 功能
+**没有授权日历，还能用吗？**
 
-- 紧凑六周月历、农历、传统节日、常用公历节日和二十四节气。
-- 2026 年官方放假和补班角标；未收录年份不猜测调休。
-- 系统日历事件圆点、跨天事件、当天日程、日历筛选与新建事件。
-- 通用、事件、样式、状态栏、关于五个原生工具栏设置页；每个开关均连接实际行为。
-- “关于”显示当前版本、构建号与简介，支持手动检查更新和可关闭的每小时自动检查；发现更新后提示，确认才下载、安装并重启。
-- 面板主题和颜色、宽度、行高、字号可调整，默认宽 280 pt、行高 32 pt、字号比例 85%。
-- 状态栏图标、公历、农历、星期、时间、自定义日期格式，可开关和拖拽排序。
-- 图标默认以模板图像自动适配菜单栏明暗，也可固定为浅色或深色。
-- 开机启动、悬停打开、面板固定、节日前一天通知。
-- 通知中心/桌面 WidgetKit 月历，支持小、中、大尺寸、午夜时间线、独立农历和调休显示设置。
-- 菜单栏面板及小组件分别保存深浅配色，每个颜色都可调整。
+可以。月历、农历、节气和调休展示不依赖日历授权；只有系统日程功能需要访问权限。
 
-系统日历授权和通知默认由用户主动开启。应用不上传日程，也不包含统计 SDK；更新检查仅请求 GitHub 的签名更新源，关闭自动检查后仅在手动点击时请求。事件编辑、删除和复杂重复规则可从“打开系统日历”入口完成。
+**调休数据覆盖哪些年份？**
 
-在桌面右键或通知中心选择“编辑小组件”，搜索 CalDock 添加月历。在“样式 → 通知中心小组件”调整其主题、配色、农历、星期起始和字体。点击小组件打开今天的菜单栏日历。系统控制 Widget 刷新时间，设置变动会同步共享容器并请求更新。
+当前内置 2026 年官方放假调休安排，未收录年份不会猜测补班。日历展示支持 1901–2099 年；节气显示日期，不提供精确交节时刻。
 
-## 全屏
+## 参与贡献
 
-日历面板可在其他应用的全屏空间中显示，快捷键无需先退出全屏。已在文本编辑的真实全屏窗口中验证呼出。
+欢迎 [报告问题](https://github.com/yuhuotech/CalDock/issues)、提出建议或提交 Pull Request。开始前请阅读 [贡献指南](CONTRIBUTING.md)。
 
-如果系统自动隐藏整个菜单栏，图标只会在菜单栏显示时出现；`⌃⌘X` 始终是替代入口。刘海屏上若图标被过多菜单挤出，可以按住 `⌘` 拖动它，或只启用图标模块。应用不修改你的系统菜单栏设置。
+## 致谢与数据来源
 
-## 低资源设计
+- [Sparkle](https://sparkle-project.org)：应用内更新；保留其原始许可证及第三方声明。
+- [国务院办公厅关于2026年部分节假日安排的通知](https://www.beijing.gov.cn/zhengce/zhengcefagui/202511/t20251104_4258873.html)：内置休假与补班数据来源。
+- Apple 的 AppKit、SwiftUI、EventKit 与 WidgetKit。
 
-- 默认一个对齐分钟的定时器，带 2 秒容差；只有显示秒或自定义格式包含秒时才启用每秒更新。
-- 收起面板后释放 SwiftUI 视图，不执行月历刷新或日历轮询。
-- 事件读取使用 EventKit 变更通知、250 ms 合并和可见 42 天范围，在独立队列执行；不启动自己的网络同步。
-- 日期图标缓存；显示内容不变时跳过重绘，使用系统模板图像适配明暗，不监听绘制期间反复变化的外观属性。
-- 节日提醒交给系统通知中心，不运行后台常驻任务。
+## 许可证
 
-查看 [实施与验收记录](docs/IMPLEMENTATION.md)。可复现空闲取样：先关闭设置和月历，再运行：
-
-```sh
-pgrep -x CalDock
-python3 scripts/measure-idle.py <PID> --seconds 20 --output build/idle-metrics.json
-footprint -p <PID> --sample 1 --noCategories
-```
-
-短时间 CPU 和内存取样不代表完整耗电测试，系统版本和日历数量也会影响结果。
-
-## 开发与验证
-
-```sh
-swift test
-bash scripts/build-app.sh debug
-bash scripts/build-app.sh release
-codesign --verify --deep --strict build/CalDock.app
-```
-
-`Package.swift` 可直接用 Xcode 打开。构建脚本自动打包资源、生成矢量绘制的图标并签名。设置 `CALDOCK_SIGN_IDENTITY` 可选择本机签名身份。
-
-应用内验收（先退出其他 CalDock 实例）：
-
-```sh
-CALDOCK_TEST_MODE=1 /Applications/CalDock.app/Contents/MacOS/CalDock --verify-settings "$PWD/build/verification-settings.json"
-open -W /Applications/CalDock.app --args --verify-system "$PWD/build/verification-system.json"
-```
-
-设置验收使用独立偏好域，不更改日常显示设置。系统验收需要已允许日历和通知，在临时日历中创建事件并清理，并测试登录项注册/注销后恢复原状态。系统验收必须通过 LaunchServices 正常启动；直接从命令行执行会改变 TCC 的负责进程归属，不能代表日常应用的授权。
-
-需要公证时，在本机保存 notarytool 钥匙串凭据后运行：
-
-```sh
-CALDOCK_SIGN_IDENTITY='Developer ID Application: Your Company (TEAMID)' \
-CALDOCK_SPARKLE_KEY_FILE='/path/to/private-update-key' \
-CALDOCK_NOTARY_PROFILE='your-keychain-profile' bash scripts/release.sh
-```
-
-发布脚本只在 Apple 返回 Accepted 后装订和重新打包，不会把仅完成签名的应用标为已公证。
-
-## GitHub Actions 打包
-
-[macOS build](https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml) 仅在推送 `v*` 版本标签时打包：先测试，再构建 Universal 应用、Developer ID 签名、Apple 公证和装订，最后从解压后的 ZIP 和只读挂载的 DMG 复核签名和票据。`main` 推送和 PR 只测试，不读取签名材料。成功后自动发布到对应的 [GitHub Release](https://github.com/yuhuotech/CalDock/releases)，上传 `CalDock-universal-<版本>.zip`、同名 DMG 及各自的 `.sha256`。仅发布任务拥有仓库写权限，签名任务保持只读；Universal 同时支持 Apple Silicon / arm64 和 Intel / x86_64。Actions Artifacts 也保留一份构建产物。
-
-发布新版本时，先同步修改 `Resources/Info.plist` 和 `Resources/Widget-Info.plist` 的 `CFBundleShortVersionString`，并递增两者的 `CFBundleVersion`，完整提交并推送后创建对应标签。例如当前 `0.1.3`：
-
-```sh
-git push origin main
-git tag -a v0.1.3 -m "CalDock 0.1.3"
-git push origin v0.1.3
-```
-
-工作流校验标签、主程序和 Widget 的版本一致后才读取密钥。当前文件名为 `CalDock-universal-0.1.3.zip` 和 `CalDock-universal-0.1.3.dmg`，分别附 `.sha256` 校验文件。DMG 内含可拖入 `/Applications` 的应用和快捷方式；应用和 DMG 均装订票据，DMG 自身也经过签名、公证。本机运行发布脚本也使用相同命名，可用 `python3 scripts/verify-release.py` 复核两种产物。
-
-每次发布同时生成并上传 `appcast.xml`。客户端通过 `releases/latest/download/appcast.xml` 读取最新更新，校验更新源和 ZIP 的 Ed25519 签名，以及应用代码签名。`SUScheduledCheckInterval=3600`，开关由 Sparkle 持久化，禁用静默下载/安装与系统画像。更新提示不加载 WebView。Sparkle 安装辅助进程仅在更新期间运行。Apple 票据装订及 DMG 签名失败最多重试 4 次，失败时中止发布。
-
-0.1.3 首次加入应用内更新。0.1.2 及更早版本需先下载并安装 0.1.3，之后即可通过“关于 → 检查更新”升级。
-
-仅更新打包方式时，可使用带构建元数据的标签，例如 `v0.1.0+packaging.1`，应用版本及文件名仍为 `0.1.0`，保留原有发布标签。版本校验只允许基础版本匹配的标签及合法构建元数据。
-
-仓库 Settings → Secrets and variables → Actions 需要以下配置：
-
-| 类型 | 名称 | 来源 |
-| --- | --- | --- |
-| Secret | `MACOS_CERTIFICATE_P12_BASE64` | Developer ID Application 的 `.p12` 文件 Base64，包含私钥 |
-| Secret | `MACOS_CERTIFICATE_PASSWORD` | 导出 `.p12` 时的密码 |
-| Secret | `APPLE_ID` | Apple 开发者账号邮箱 |
-| Secret | `APPLE_APP_SPECIFIC_PASSWORD` | 此账号生成的 App 专用密码 |
-| Secret | `SPARKLE_ED_PRIVATE_KEY` | Sparkle 的 Base64 Ed25519 私钥种子，仅用于签名更新源和更新包；公钥嵌入 Info.plist |
-| Variable | `APPLE_TEAM_ID` | `3BH46GJY6D` |
-| Variable | `MACOS_SIGN_IDENTITY` | `Developer ID Application: Shanghai YuHuo Information Technology Co., Ltd. (3BH46GJY6D)` |
-
-每次任务创建临时钥匙串，结束时清理；上传仅限发布包和公证报告，原始证书及密码不进入代码或 Artifact。当前证书有效期至北京时间 2027-02-02 06:12:15，续期后替换证书及密码 Secrets；若名称和团队不变，无需修改 Variables。App 专用密码撤销后也需要更新 Secret。
-
-签名和公证用于通过 Gatekeeper 的开发者身份及恶意软件检查，不会取消 macOS 正常的首次下载打开确认、日历和通知授权。不要依靠移除隔离属性或关闭 Gatekeeper 分发应用。
-
-日历日期测试覆盖截图中的 2026-10-16 / 九月初七、月边界、农历闰月、春节除夕、节气、官方调休、夏令时，以及事件结束于午夜时不落入下一天的边界。
-
-## 数据说明
-
-2026 年调休数据来源：[国务院办公厅关于2026年部分节假日安排的通知](https://www.beijing.gov.cn/zhengce/zhengcefagui/202511/t20251104_4258873.html)，存放在 `Sources/CalendarCore/Resources/holidays.json`，后续年份需按正式公布的通知补充。节气使用太阳视黄经计算日期，不提供精确交节时刻。日历展示支持 1901–2099 年，使用本机时区。
-
-已完成真实日历读写/筛选/清理、通知送达/取消、登录项注册/注销以及共享设置的本机验收。多屏坐标覆盖负坐标和小屏边界测试；实际 Intel 硬件与其他 macOS 版本需要对应设备，不能将 Universal 编译成功当作这些硬件的实测结果。公证记录见 `docs/verification/notarization-log.json`。
+CalDock 采用 [MIT License](LICENSE)。允许使用、修改、分发和商业使用，需保留版权与许可声明。第三方组件遵循各自许可证。
