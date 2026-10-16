@@ -1,0 +1,112 @@
+name: macOS build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Test calendar logic
+        run: swift test
+
+  package:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      CALDOCK_SIGN_IDENTITY: ${{ vars.MACOS_SIGN_IDENTITY }}
+      CALDOCK_NOTARY_PROFILE: caldock-ci
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Import signing and notarization credentials
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          export CALDOCK_NOTARY_KEYCHAIN="$RUNNER_TEMP/caldock-signing.keychain-db"
+          printf 'CALDOCK_NOTARY_KEYCHAIN=%s\n' "$CALDOCK_NOTARY_KEYCHAIN" >> "$GITHUB_ENV"
+          : "${CERTIFICATE_BASE64:?Missing certificate secret}"
+          : "${CERTIFICATE_PASSWORD:?Missing certificate password secret}"
+          : "${APPLE_ID:?Missing Apple ID secret}"
+          : "${APPLE_APP_SPECIFIC_PASSWORD:?Missing Apple password secret}"
+          : "${APPLE_TEAM_ID:?Missing team variable}"
+          : "${CALDOCK_SIGN_IDENTITY:?Missing signing identity variable}"
+          umask 077
+          certificate_path="$RUNNER_TEMP/caldock-certificate.p12"
+          printf '%s' "$CERTIFICATE_BASE64" | base64 --decode > "$certificate_path"
+          keychain_password="$(openssl rand -hex 32)"
+          echo "::add-mask::$keychain_password"
+          security create-keychain -p "$keychain_password" "$CALDOCK_NOTARY_KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$CALDOCK_NOTARY_KEYCHAIN"
+          security unlock-keychain -p "$keychain_password" "$CALDOCK_NOTARY_KEYCHAIN"
+          security import "$certificate_path" -P "$CERTIFICATE_PASSWORD" \
+            -t cert -f pkcs12 -k "$CALDOCK_NOTARY_KEYCHAIN" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$keychain_password" "$CALDOCK_NOTARY_KEYCHAIN" > /dev/null
+          security list-keychains -d user -s "$CALDOCK_NOTARY_KEYCHAIN" "$HOME/Library/Keychains/login.keychain-db"
+          xcrun notarytool store-credentials "$CALDOCK_NOTARY_PROFILE" \
+            --keychain "$CALDOCK_NOTARY_KEYCHAIN" --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD"
+          rm -f "$certificate_path"
+      - name: Build, sign, notarize and staple Universal app
+        run: bash scripts/release.sh
+      - name: Verify the distributed archive
+        run: |
+          set -euo pipefail
+          (cd build && shasum -a 256 -c CalDock-macos-universal.zip.sha256)
+          ditto -x -k build/CalDock-macos-universal.zip "$RUNNER_TEMP/caldock-verify"
+          python3 scripts/verify-bundle.py "$RUNNER_TEMP/caldock-verify/CalDock.app"
+          xcrun stapler validate "$RUNNER_TEMP/caldock-verify/CalDock.app"
+          spctl --assess --type execute --verbose=2 "$RUNNER_TEMP/caldock-verify/CalDock.app"
+      - name: Upload notarized app
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: CalDock-macos-universal-${{ github.run_number }}
+          path: |
+            build/CalDock-macos-universal.zip
+            build/CalDock-macos-universal.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload notarization report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notarization-report-${{ github.run_number }}
+          path: |
+            build/notarization.json
+            build/notarization-log.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Remove credentials
+        if: always()
+        run: |
+          keychain_path="$RUNNER_TEMP/caldock-signing.keychain-db"
+          if [[ -f "$keychain_path" ]]; then
+            security delete-keychain "$keychain_path"
+          fi
+          rm -f "$RUNNER_TEMP/caldock-certificate.p12"

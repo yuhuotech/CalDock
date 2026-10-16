@@ -99,6 +99,25 @@ CALDOCK_NOTARY_PROFILE='your-keychain-profile' bash scripts/release.sh
 
 发布脚本只在 Apple 返回 Accepted 后装订和重新打包，不会把仅完成签名的应用标为已公证。
 
+## GitHub Actions 打包
+
+[macOS build](https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml) 在推送 `main`、`v*` 标签或手动运行时，先测试，再构建 Universal 应用、Developer ID 签名、Apple 公证和装订，最后从解压后的发布包复核签名和票据。PR 只测试，不读取签名材料。成功后在该次运行的 Artifacts 下载 `CalDock-macos-universal-*`，解压外层 Artifact 后可取得发布 ZIP 和 SHA256。
+
+仓库 Settings → Secrets and variables → Actions 需要以下配置：
+
+| 类型 | 名称 | 来源 |
+| --- | --- | --- |
+| Secret | `MACOS_CERTIFICATE_P12_BASE64` | Developer ID Application 的 `.p12` 文件 Base64，包含私钥 |
+| Secret | `MACOS_CERTIFICATE_PASSWORD` | 导出 `.p12` 时的密码 |
+| Secret | `APPLE_ID` | Apple 开发者账号邮箱 |
+| Secret | `APPLE_APP_SPECIFIC_PASSWORD` | 此账号生成的 App 专用密码 |
+| Variable | `APPLE_TEAM_ID` | `3BH46GJY6D` |
+| Variable | `MACOS_SIGN_IDENTITY` | `Developer ID Application: Shanghai YuHuo Information Technology Co., Ltd. (3BH46GJY6D)` |
+
+每次任务创建临时钥匙串，结束时清理；上传仅限发布包和公证报告，原始证书及密码不进入代码或 Artifact。当前证书有效期至北京时间 2027-02-02 06:12:15，续期后替换证书及密码 Secrets；若名称和团队不变，无需修改 Variables。App 专用密码撤销后也需要更新 Secret。
+
+签名和公证用于通过 Gatekeeper 的开发者身份及恶意软件检查，不会取消 macOS 正常的首次下载打开确认、日历和通知授权。不要依靠移除隔离属性或关闭 Gatekeeper 分发应用。
+
 日历日期测试覆盖截图中的 2026-10-16 / 九月初七、月边界、农历闰月、春节除夕、节气、官方调休、夏令时，以及事件结束于午夜时不落入下一天的边界。
 
 ## 数据说明
