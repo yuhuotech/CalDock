@@ -117,6 +117,8 @@ git push origin v0.1.3
 
 每次发布同时生成并上传 `appcast.xml`。客户端通过 `releases/latest/download/appcast.xml` 读取最新更新，校验更新源和 ZIP 的 Ed25519 签名，以及应用代码签名。`SUScheduledCheckInterval=3600`，开关由 Sparkle 持久化，禁用静默下载/安装与系统画像。更新提示不加载 WebView。Sparkle 安装辅助进程仅在更新期间运行。Apple 票据装订及 DMG 签名失败最多重试 4 次，失败时中止发布。
 
+0.1.3 首次加入应用内更新。0.1.2 及更早版本需先下载并安装 0.1.3，之后即可通过“关于 → 检查更新”升级。
+
 仅更新打包方式时，可使用带构建元数据的标签，例如 `v0.1.0+packaging.1`，应用版本及文件名仍为 `0.1.0`，保留原有发布标签。版本校验只允许基础版本匹配的标签及合法构建元数据。
 
 仓库 Settings → Secrets and variables → Actions 需要以下配置：
