@@ -31,3 +31,4 @@
 - 本机签名公证已完成；复用了同团队已有证书，将 CSR、cer、p12、导出密码、base64 备份整理到用户指定的仓库外目录，保留 CalDock 自己的 App 专用密码。私钥和密码不进入仓库。
 - 已通过 `gh` 配置 4 项仓库 Secrets 和 2 项 Variables，专用密码经 Apple 实际验证有效。工作流仅在 `v*` 标签推送时打包，`main` 和 PR 只测试；文件名包含 CalDock、应用版本、macos 和 universal。主程序、Widget、标签版本不一致时在读取密钥前报错。
 - 首轮云端 14 项测试通过；发现跨架构构建后的路径查询遗漏架构参数，已补齐同一组 `--arch` 参数，避免在不同 SwiftPM/Xcode 版本中误取单架构目录。
+- `v0.1.0` 标签完整云端验收通过：[运行 38915194922](https://github.com/yuhuotech/CalDock/actions/runs/38915194922)，测试和打包任务均为 success。Apple 公证 `5ba2515c-1104-41f5-97b5-b6591fea7d14` 为 Accepted；装订、最终 ZIP 解压复核签名/票据/Gatekeeper、SHA256 以及临时钥匙串清理全部通过。产物 `CalDock-0.1.0-macos-universal.zip` 和同名 `.zip.sha256` 已上传；报告单独上传。对应 main 推送测试通过，打包任务按规则 skipped。

@@ -42,3 +42,4 @@
 - 用户随后配置 `caldock-notary`，Apple 公证已通过（Accepted），提交 ID `1ce48452-e324-4535-a647-7efa5c998add`，无 issues。已装订票据；构建产物、/Applications 安装和最终 ZIP 解压出的应用均通过票据/签名验证，`spctl` 来源为 Notarized Developer ID。记录见 `verification/notarization-log.json`。
 - 多屏负坐标/小屏使用位置算法测试，唤醒和时区使用真实通知链注入；实际休眠、Intel 硬件及其他 macOS 版本未作为本机已实测结果。本机没有 Rosetta，已确认 x86_64 构建包含在 Universal 产物。
 - GitHub Actions：`main`/PR 只测试，仅 `v*` 标签推送打包；标签必须匹配主程序和扩展版本。签名材料通过仓库 Secrets 注入临时钥匙串，团队和签名身份使用 Variables；只上传公证后的 ZIP、SHA256 及公证报告。
+- `v0.1.0` 的[云端构建](https://github.com/yuhuotech/CalDock/actions/runs/38915194922)测试和打包全部成功，公证 ID `5ba2515c-1104-41f5-97b5-b6591fea7d14`（Accepted）。最终 ZIP 解压后的 Universal 架构、签名、Widget 入口、装订票据、Gatekeeper 和 SHA256 均通过复核；main 构建仅测试，未运行打包。
