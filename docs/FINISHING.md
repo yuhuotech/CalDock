@@ -34,3 +34,5 @@
 - `v0.1.0` 标签完整云端验收通过：[运行 38915194922](https://github.com/yuhuotech/CalDock/actions/runs/38915194922)，测试和打包任务均为 success。Apple 公证 `5ba2515c-1104-41f5-97b5-b6591fea7d14` 为 Accepted；装订、最终 ZIP 解压复核签名/票据/Gatekeeper、SHA256 以及临时钥匙串清理全部通过。产物 `CalDock-0.1.0-macos-universal.zip` 和同名 `.zip.sha256` 已上传；报告单独上传。对应 main 推送测试通过，打包任务按规则 skipped。
 - 发布命名改为 `CalDock-universal-<版本>`，新增压缩 DMG、Applications 拖拽安装快捷方式及独立签名/公证/装订；ZIP 和 DMG 分别生成 SHA256。0.1.0 本机实际生成两种格式并通过全部校验，ZIP 公证 `b4936c4e-acc0-49ca-a121-0625d3bf78a8`、DMG 公证 `538781b9-b1ca-4149-99e4-20ebb8c21072` 均为 Accepted。验证包含 DMG 只读挂载、应用与扩展 Universal 架构/签名/票据、Gatekeeper 和两种格式的二进制一致性。
 - 按用户要求准备 `v0.1.1`：主程序和 Widget 版本均为 0.1.1，构建号均递增至 2。
+- 新增独立 GitHub Release 发布任务：依赖 ZIP/DMG 签名、公证、装订、挂载与校验全部成功，下载该次构建的准确产物并复核 SHA256 后上传 ZIP、DMG 及各自的校验文件，再公开 Release；发布任务单独授予 contents:write。
+- 按用户要求准备 `v0.1.2`：主程序和 Widget 版本均为 0.1.2，构建号均递增至 3。先发布已验证的 0.1.1 安装包，再推送 0.1.2 标签验证自动发布流程。

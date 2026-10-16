@@ -101,17 +101,17 @@ CALDOCK_NOTARY_PROFILE='your-keychain-profile' bash scripts/release.sh
 
 ## GitHub Actions 打包
 
-[macOS build](https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml) 仅在推送 `v*` 版本标签时打包：先测试，再构建 Universal 应用、Developer ID 签名、Apple 公证和装订，最后从解压后的 ZIP 和只读挂载的 DMG 复核签名和票据。`main` 推送和 PR 只测试，不读取签名材料。成功后在该次运行的 Artifacts 下载 `CalDock-universal-<版本>`，其中包含同名 ZIP、DMG 及各自的 `.sha256`；Universal 同时支持 Apple Silicon / arm64 和 Intel / x86_64。
+[macOS build](https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml) 仅在推送 `v*` 版本标签时打包：先测试，再构建 Universal 应用、Developer ID 签名、Apple 公证和装订，最后从解压后的 ZIP 和只读挂载的 DMG 复核签名和票据。`main` 推送和 PR 只测试，不读取签名材料。成功后自动发布到对应的 [GitHub Release](https://github.com/yuhuotech/CalDock/releases)，上传 `CalDock-universal-<版本>.zip`、同名 DMG 及各自的 `.sha256`。仅发布任务拥有仓库写权限，签名任务保持只读；Universal 同时支持 Apple Silicon / arm64 和 Intel / x86_64。Actions Artifacts 也保留一份构建产物。
 
-发布新版本时，先同步修改 `Resources/Info.plist` 和 `Resources/Widget-Info.plist` 的 `CFBundleShortVersionString`，并递增两者的 `CFBundleVersion`，完整提交并推送后创建对应标签。例如当前 `0.1.1`：
+发布新版本时，先同步修改 `Resources/Info.plist` 和 `Resources/Widget-Info.plist` 的 `CFBundleShortVersionString`，并递增两者的 `CFBundleVersion`，完整提交并推送后创建对应标签。例如当前 `0.1.2`：
 
 ```sh
 git push origin main
-git tag -a v0.1.1 -m "CalDock 0.1.1"
-git push origin v0.1.1
+git tag -a v0.1.2 -m "CalDock 0.1.2"
+git push origin v0.1.2
 ```
 
-工作流校验标签、主程序和 Widget 的版本一致后才读取密钥。当前文件名为 `CalDock-universal-0.1.1.zip` 和 `CalDock-universal-0.1.1.dmg`，分别附 `.sha256` 校验文件。DMG 内含可拖入 `/Applications` 的应用和快捷方式；应用和 DMG 均装订票据，DMG 自身也经过签名、公证。本机运行发布脚本也使用相同命名，可用 `python3 scripts/verify-release.py` 复核两种产物。
+工作流校验标签、主程序和 Widget 的版本一致后才读取密钥。当前文件名为 `CalDock-universal-0.1.2.zip` 和 `CalDock-universal-0.1.2.dmg`，分别附 `.sha256` 校验文件。DMG 内含可拖入 `/Applications` 的应用和快捷方式；应用和 DMG 均装订票据，DMG 自身也经过签名、公证。本机运行发布脚本也使用相同命名，可用 `python3 scripts/verify-release.py` 复核两种产物。
 
 仅更新打包方式时，可使用带构建元数据的标签，例如 `v0.1.0+packaging.1`，应用版本及文件名仍为 `0.1.0`，保留原有发布标签。版本校验只允许基础版本匹配的标签及合法构建元数据。
 

@@ -30,6 +30,9 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: macos-15
     timeout-minutes: 60
+    outputs:
+      release_name: ${{ steps.release.outputs.name }}
+      version: ${{ steps.release.outputs.version }}
     env:
       CALDOCK_SIGN_IDENTITY: ${{ vars.MACOS_SIGN_IDENTITY }}
       CALDOCK_NOTARY_PROFILE: caldock-ci
@@ -110,3 +113,36 @@ jobs:
             security delete-keychain "$keychain_path"
           fi
           rm -f "$RUNNER_TEMP/caldock-certificate.p12"
+
+  release:
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified ZIP and DMG
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ needs.package.outputs.release_name }}
+          path: dist
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_VERSION: ${{ needs.package.outputs.version }}
+          RELEASE_NAME: ${{ needs.package.outputs.release_name }}
+        run: |
+          set -euo pipefail
+          cd dist
+          shasum -a 256 -c "$RELEASE_NAME.zip.sha256"
+          shasum -a 256 -c "$RELEASE_NAME.dmg.sha256"
+          if ! gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --verify-tag --draft \
+              --title "CalDock $RELEASE_VERSION" --generate-notes
+          fi
+          gh release upload "$RELEASE_TAG" --clobber \
+            "$RELEASE_NAME.zip" "$RELEASE_NAME.zip.sha256" \
+            "$RELEASE_NAME.dmg" "$RELEASE_NAME.dmg.sha256"
+          gh release edit "$RELEASE_TAG" --draft=false
