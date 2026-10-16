@@ -1,0 +1,14 @@
+{
+  "pid": 60705,
+  "sample_seconds": 60.013,
+  "average_cpu_percent_one_core": 0.0,
+  "start": {
+    "cpu_seconds": 0.11,
+    "rss_mib": 71.95
+  },
+  "end": {
+    "cpu_seconds": 0.11,
+    "rss_mib": 71.91
+  },
+  "note": "RSS includes shared/mapped pages; use footprint for physical footprint. Short samples are not battery-life benchmarks."
+}

@@ -1,0 +1,72 @@
+{
+  "checks" : [
+    {
+      "check" : "calendar.authorization",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "calendar.create-and-read",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "calendar.provider-read",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "calendar.filter-excludes",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "calendar.filter-restores",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "calendar.cleanup",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "notification.authorization",
+      "detail" : "status=2, alert=2",
+      "passed" : true
+    },
+    {
+      "check" : "notification.holiday-schedule",
+      "detail" : "30 pending",
+      "passed" : true
+    },
+    {
+      "check" : "notification.delivery",
+      "detail" : "1 delivered",
+      "passed" : true
+    },
+    {
+      "check" : "notification.disable-cancels",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "login.registration",
+      "detail" : "status=1",
+      "passed" : true
+    },
+    {
+      "check" : "login.unregistration",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "widget.shared-settings",
+      "detail" : "",
+      "passed" : true
+    }
+  ],
+  "date" : "2026-10-16T13:24:14Z",
+  "passed" : true,
+  "system" : true
+}
