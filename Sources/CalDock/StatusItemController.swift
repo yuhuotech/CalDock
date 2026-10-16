@@ -455,8 +455,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     @objc func showSettings() { panel.close(); settingsController.show() }
     @objc private func quit() { NSApp.terminate(nil) }
     @objc private func about() {
-        NSApp.activate(ignoringOtherApps: true)
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-        NSApp.orderFrontStandardAboutPanel(options: [.applicationName: "CalDock", .applicationVersion: version, .credits: NSAttributedString(string: "轻巧的原生菜单栏日历\n农历 · 节气 · 系统日程")])
+        panel.close()
+        settingsController.show(page: .about)
     }
 }

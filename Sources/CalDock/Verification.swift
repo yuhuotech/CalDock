@@ -102,6 +102,30 @@ enum Verification {
                 record("widget.shared-settings", SharedPreferences.read() == original)
             } catch { record("widget.shared-settings", false, error.localizedDescription) }
         } else {
+            let updater = SoftwareUpdater.shared
+            let automaticChecks = updater.automaticallyChecksForUpdates
+            updater.setAutomaticallyChecksForUpdates(false)
+            updater.start()
+            await settle()
+            record("updater.manual-check-available", updater.canCheckForUpdates)
+            record("updater.hourly-interval", updater.checkInterval == 3600)
+            record("updater.disable-automatic", !updater.automaticallyChecksForUpdates
+                   && UserDefaults.standard.object(forKey: "SUEnableAutomaticChecks") as? Bool == false)
+            updater.setAutomaticallyChecksForUpdates(true)
+            await settle()
+            record("updater.enable-and-persist", updater.automaticallyChecksForUpdates
+                   && UserDefaults.standard.object(forKey: "SUEnableAutomaticChecks") as? Bool == true)
+            updater.setAutomaticallyChecksForUpdates(automaticChecks)
+            record("updater.version-from-bundle", updater.currentVersion == Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String)
+            controller.settingsController.show(page: .about)
+            await settle()
+            record("settings.about-page", NSApp.windows.contains { $0.title == "关于" && $0.contentView != nil })
+            record("settings.all-five-tabs-visible", controller.settingsController.allPagesVisible)
+            if let image = controller.settingsController.renderedPNG() {
+                try? FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try? image.write(to: output.deletingLastPathComponent().appendingPathComponent("settings-about.png"))
+            }
+            NSApp.windows.first { $0.title == "关于" }?.close()
             var testDefaults = AppPreferences()
             testDefaults.shortcutKey = 80 // F19, isolated from the user's shortcut.
             testDefaults.shortcutModifiers = 6912

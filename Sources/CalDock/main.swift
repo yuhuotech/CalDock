@@ -9,6 +9,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         installMainMenu()
         controller = StatusItemController()
         let args = ProcessInfo.processInfo.arguments
+        if !args.contains("--verify-settings") && !args.contains("--verify-system") {
+            SoftwareUpdater.shared.start()
+        }
         if let index = args.firstIndex(of: "--verify-settings") ?? args.firstIndex(of: "--verify-system"), args.count > index + 1, let controller {
             let output = URL(fileURLWithPath: args[index + 1])
             Task { @MainActor in
@@ -19,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if args.contains("--show-calendar") { controller?.openPanel() }
         if args.contains("--settings") { controller?.showSettings() }
+        if args.contains("--about") { controller?.settingsController.show(page: .about) }
     }
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         controller?.openPanel(); return false

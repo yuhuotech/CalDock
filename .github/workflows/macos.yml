@@ -49,6 +49,7 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
@@ -60,7 +61,11 @@ jobs:
           : "${APPLE_APP_SPECIFIC_PASSWORD:?Missing Apple password secret}"
           : "${APPLE_TEAM_ID:?Missing team variable}"
           : "${CALDOCK_SIGN_IDENTITY:?Missing signing identity variable}"
+          : "${SPARKLE_ED_PRIVATE_KEY:?Missing Sparkle update signing key secret}"
           umask 077
+          sparkle_key_path="$RUNNER_TEMP/caldock-sparkle-key"
+          printf '%s' "$SPARKLE_ED_PRIVATE_KEY" > "$sparkle_key_path"
+          printf 'CALDOCK_SPARKLE_KEY_FILE=%s\n' "$sparkle_key_path" >> "$GITHUB_ENV"
           certificate_path="$RUNNER_TEMP/caldock-certificate.p12"
           printf '%s' "$CERTIFICATE_BASE64" | base64 --decode > "$certificate_path"
           keychain_password="$(openssl rand -hex 32)"
@@ -91,6 +96,7 @@ jobs:
             build/${{ steps.release.outputs.name }}.zip.sha256
             build/${{ steps.release.outputs.name }}.dmg
             build/${{ steps.release.outputs.name }}.dmg.sha256
+            build/appcast.xml
           if-no-files-found: error
           retention-days: 30
       - name: Upload notarization report
@@ -113,6 +119,7 @@ jobs:
             security delete-keychain "$keychain_path"
           fi
           rm -f "$RUNNER_TEMP/caldock-certificate.p12"
+          rm -f "$RUNNER_TEMP/caldock-sparkle-key"
 
   release:
     needs: package
@@ -144,5 +151,5 @@ jobs:
           fi
           gh release upload "$RELEASE_TAG" --clobber \
             "$RELEASE_NAME.zip" "$RELEASE_NAME.zip.sha256" \
-            "$RELEASE_NAME.dmg" "$RELEASE_NAME.dmg.sha256"
+            "$RELEASE_NAME.dmg" "$RELEASE_NAME.dmg.sha256" appcast.xml
           gh release edit "$RELEASE_TAG" --draft=false

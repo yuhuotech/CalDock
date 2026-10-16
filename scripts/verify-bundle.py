@@ -15,6 +15,15 @@ for bundle, expected in [(app, "com.yuhuo.caldock"), (widget, "com.yuhuo.caldock
     architectures = subprocess.check_output(["lipo", "-archs", str(binary)], text=True).split()
     assert {"arm64", "x86_64"}.issubset(architectures), architectures
     subprocess.run(["codesign", "--verify", "--strict", str(bundle)], check=True)
+    if bundle == app:
+        assert info["SUScheduledCheckInterval"] == 3600
+        assert info["SUAllowsAutomaticUpdates"] is False
+        assert info["SURequireSignedFeed"] is True and info["SUVerifyUpdateBeforeExtraction"] is True
+        assert info["SUFeedURL"] == "https://github.com/yuhuotech/CalDock/releases/latest/download/appcast.xml"
+        assert info["SUPublicEDKey"]
+        framework = app / "Contents/Frameworks/Sparkle.framework"
+        assert {"arm64", "x86_64"}.issubset(subprocess.check_output(["lipo", "-archs", str(framework / "Sparkle")], text=True).split())
+        subprocess.run(["codesign", "--verify", "--deep", "--strict", str(bundle)], check=True)
     if bundle == widget:
         assert info["NSExtension"]["NSExtensionPointIdentifier"] == "com.apple.widgetkit-extension"
         assert (bundle / "Contents/Resources/holidays.json").is_file()

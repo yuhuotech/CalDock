@@ -3,11 +3,23 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 : "${CALDOCK_SIGN_IDENTITY:?Set CALDOCK_SIGN_IDENTITY to your Developer ID Application identity}"
 : "${CALDOCK_NOTARY_PROFILE:?Set CALDOCK_NOTARY_PROFILE to an existing notarytool Keychain profile name}"
+: "${CALDOCK_SPARKLE_KEY_FILE:?Set CALDOCK_SPARKLE_KEY_FILE to the private Sparkle update signing key file}"
 release_name="$(python3 scripts/release-metadata.py)"
 notary_credentials=(--keychain-profile "$CALDOCK_NOTARY_PROFILE")
 if [[ -n "${CALDOCK_NOTARY_KEYCHAIN:-}" ]]; then
     notary_credentials+=(--keychain "$CALDOCK_NOTARY_KEYCHAIN")
 fi
+retry_apple_tool() {
+    local attempt
+    for attempt in 1 2 3 4; do
+        if "$@"; then return 0; fi
+        if [[ "$attempt" -lt 4 ]]; then
+            printf 'Apple tool failed; retrying (%s/4).\n' "$attempt" >&2
+            sleep "$((attempt * 5))"
+        fi
+    done
+    return 1
+}
 bash scripts/build-app.sh release
 archive="$PWD/build/$release_name.zip"
 disk_image="$PWD/build/$release_name.dmg"
@@ -23,16 +35,17 @@ notarize() {
 }
 ditto -c -k --sequesterRsrc --keepParent build/CalDock.app "$archive"
 notarize "$archive" build/notarization
-xcrun stapler staple build/CalDock.app
+retry_apple_tool xcrun stapler staple build/CalDock.app
 xcrun stapler validate build/CalDock.app
 spctl --assess --type execute --verbose=2 build/CalDock.app
 ditto -c -k --sequesterRsrc --keepParent build/CalDock.app "$archive"
 python3 scripts/create-dmg.py build/CalDock.app "$disk_image"
-codesign --force --sign "$CALDOCK_SIGN_IDENTITY" --timestamp "$disk_image"
+retry_apple_tool codesign --force --sign "$CALDOCK_SIGN_IDENTITY" --timestamp "$disk_image"
 notarize "$disk_image" build/notarization-dmg
-xcrun stapler staple "$disk_image"
+retry_apple_tool xcrun stapler staple "$disk_image"
 xcrun stapler validate "$disk_image"
 for extension in zip dmg; do
     (cd build && shasum -a 256 "$release_name.$extension" > "$release_name.$extension.sha256")
 done
+python3 scripts/generate-appcast.py --key-file "$CALDOCK_SPARKLE_KEY_FILE"
 printf 'Release: %s\nRelease: %s\n' "$archive" "$disk_image"

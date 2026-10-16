@@ -1,6 +1,41 @@
 {
   "checks" : [
     {
+      "check" : "updater.manual-check-available",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "updater.hourly-interval",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "updater.disable-automatic",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "updater.enable-and-persist",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "updater.version-from-bundle",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "settings.about-page",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "settings.all-five-tabs-visible",
+      "detail" : "",
+      "passed" : true
+    },
+    {
       "check" : "panel.compact-default",
       "detail" : "(280.0, 276.0)",
       "passed" : true
@@ -187,7 +222,7 @@
     },
     {
       "check" : "status.all-text-modules",
-      "detail" : "10月16日 初七 周五 21:23 CalDock 2026-10-16",
+      "detail" : "10月16日 初七 周五 23:16 CalDock 2026-10-16",
       "passed" : true
     },
     {
@@ -257,7 +292,7 @@
     },
     {
       "check" : "panel.stress-125-cycles",
-      "detail" : "physical footprint 68944928 → 42730528 bytes",
+      "detail" : "physical footprint 79430688 → 52495392 bytes",
       "passed" : true
     },
     {
@@ -266,7 +301,7 @@
       "passed" : true
     }
   ],
-  "date" : "2026-10-16T13:24:02Z",
+  "date" : "2026-10-16T15:17:00Z",
   "passed" : true,
   "system" : false
 }

@@ -6,7 +6,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum SettingsPage: String, CaseIterable, Identifiable {
-    case general = "通用", events = "事件", style = "样式", status = "状态栏"
+    case general = "通用", events = "事件", style = "样式", status = "状态栏", about = "关于"
     var id: String { rawValue }
     var symbol: String {
         switch self {
@@ -14,6 +14,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .events: return "calendar.badge.clock"
         case .style: return "paintpalette"
         case .status: return "menubar.rectangle"
+        case .about: return "info.circle"
         }
     }
 }
@@ -28,11 +29,19 @@ final class SettingsController: NSObject, NSWindowDelegate, NSToolbarDelegate {
     private var window: NSWindow?
     private let navigation = SettingsNavigation()
 
-    func show() {
-        if let window { NSApp.activate(ignoringOtherApps: true); window.makeKeyAndOrderFront(nil); return }
+    func show(page: SettingsPage? = nil) {
+        if let page { navigation.page = page }
+        if let window {
+            window.title = navigation.page.rawValue
+            window.toolbar?.selectedItemIdentifier = NSToolbarItem.Identifier(navigation.page.id)
+            NSApp.activate(ignoringOtherApps: true)
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 500, height: 414),
                               styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
         window.title = navigation.page.rawValue
+        window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.toolbarStyle = .unified
         let toolbar = NSToolbar(identifier: "CalDockPreferences")
@@ -54,6 +63,18 @@ final class SettingsController: NSObject, NSWindowDelegate, NSToolbarDelegate {
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         [.flexibleSpace] + SettingsPage.allCases.map { NSToolbarItem.Identifier($0.id) }
+    }
+
+    func renderedPNG() -> Data? {
+        guard let view = window?.contentView?.superview,
+              let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return nil }
+        view.cacheDisplay(in: view.bounds, to: bitmap)
+        return bitmap.representation(using: .png, properties: [:])
+    }
+
+    var allPagesVisible: Bool {
+        let visible = Set(window?.toolbar?.visibleItems?.map { $0.itemIdentifier.rawValue } ?? [])
+        return Set(SettingsPage.allCases.map(\.id)).isSubset(of: visible)
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] { toolbarDefaultItemIdentifiers(toolbar) }
@@ -88,6 +109,7 @@ struct SettingsView: View {
     @ObservedObject var navigation: SettingsNavigation
     @ObservedObject private var login = LoginItemController.shared
     @ObservedObject private var notifier = HolidayNotifier.shared
+    @ObservedObject private var updater = SoftwareUpdater.shared
     @State private var recordingShortcut = false
     @State private var draggingModule: StatusModule?
     @State private var confirmReset = false
@@ -106,6 +128,7 @@ struct SettingsView: View {
                     case .events: events
                     case .style: style
                     case .status: status
+                    case .about: about
                     }
                 }.padding(.horizontal, 22).padding(.vertical, 16).frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -174,6 +197,41 @@ struct SettingsView: View {
             settingsRow("鼠标悬浮") { Toggle("打开面板", isOn: p.openOnHover) }
             settingsRow("日程列表") { Toggle("打开面板时展开", isOn: p.showAgenda) }
         }.toggleStyle(.checkbox)
+    }
+
+    private var about: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                Image(nsImage: NSApplication.shared.applicationIconImage).resizable().frame(width: 48, height: 48)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("CalDock").font(.system(size: 19, weight: .semibold))
+                    Text("版本 \(updater.currentVersion)（\(updater.buildNumber)）")
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+            }
+            Text("轻巧的 macOS 菜单栏日历。随时查看公历、农历、节气、调休和系统日程，支持桌面小组件与全屏快捷呼出。")
+                .font(.system(size: 12)).fixedSize(horizontal: false, vertical: true)
+            Divider()
+            HStack {
+                Text("软件更新").font(.system(size: 13, weight: .semibold))
+                Spacer()
+                Button("检查更新…") { updater.checkForUpdates() }
+                    .disabled(!updater.canCheckForUpdates)
+            }
+            Toggle("自动检查更新（每小时一次）", isOn: Binding(
+                get: { updater.automaticallyChecksForUpdates },
+                set: { updater.setAutomaticallyChecksForUpdates($0) }
+            )).toggleStyle(.checkbox)
+            note("发现新版本时提示，确认后才会下载、安装并重新打开 CalDock。")
+            if let date = updater.lastUpdateCheckDate {
+                Text("上次检查：\(date.formatted(date: .abbreviated, time: .shortened))")
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+            HStack(spacing: 16) {
+                Link("版本记录", destination: URL(string: "https://github.com/yuhuotech/CalDock/releases")!)
+                Link("项目主页", destination: URL(string: "https://github.com/yuhuotech/CalDock")!)
+            }.font(.system(size: 11))
+        }
     }
 
     private var events: some View {

@@ -18,6 +18,10 @@ for bundle in "$bin_dir"/*.bundle; do
     [[ -d "$bundle" ]] || continue
     cp -R "$bundle" "$app_dir/Contents/Resources/"
 done
+framework_dir="$app_dir/Contents/Frameworks/Sparkle.framework"
+mkdir -p "$app_dir/Contents/Frameworks"
+ditto .build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework "$framework_dir"
+cp .build/artifacts/sparkle/Sparkle/LICENSE "$app_dir/Contents/Resources/Sparkle-LICENSE.txt"
 widget_dir="$app_dir/Contents/PlugIns/CalDockWidget.appex"
 mkdir -p "$widget_dir/Contents/MacOS" "$widget_dir/Contents/Resources"
 cp Resources/Widget-Info.plist "$widget_dir/Contents/Info.plist"
@@ -43,12 +47,12 @@ if [[ -z "$sign_identity" ]]; then
     printf 'No matching Developer ID found. Set CALDOCK_SIGN_IDENTITY explicitly (use - only for isolated local development).\n' >&2
     exit 1
 fi
-sign_flags=()
-if [[ "$sign_identity" != "-" ]]; then sign_flags=(--options runtime --timestamp); fi
 sign_bundle() {
     local attempt
+    local sign_args=(--force --sign "$sign_identity")
+    if [[ "$sign_identity" != "-" ]]; then sign_args+=(--options runtime --timestamp); fi
     for attempt in 1 2 3; do
-        if codesign --force --sign "$sign_identity" "${sign_flags[@]}" "$@"; then return 0; fi
+        if codesign "${sign_args[@]}" "$@"; then return 0; fi
         if [[ "$attempt" -lt 3 ]]; then
             printf 'Signing failed; retrying with timestamp requirements unchanged (%s/3).\n' "$attempt" >&2
             sleep "$((attempt * 3))"
@@ -57,6 +61,13 @@ sign_bundle() {
     return 1
 }
 sign_bundle --entitlements Resources/Widget.entitlements "$widget_dir"
+for component in "$framework_dir/Versions/B/Autoupdate" \
+    "$framework_dir/Versions/B/Updater.app" \
+    "$framework_dir/Versions/B/XPCServices/Downloader.xpc" \
+    "$framework_dir/Versions/B/XPCServices/Installer.xpc"; do
+    sign_bundle --preserve-metadata=identifier,entitlements "$component"
+done
+sign_bundle "$framework_dir"
 sign_bundle --entitlements Resources/CalDock.entitlements "$app_dir"
 touch "$app_dir"
 python3 scripts/verify-bundle.py "$app_dir"

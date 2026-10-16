@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "check": "signed feed accepted",
+      "passed": true
+    },
+    {
+      "check": "signed archive accepted",
+      "passed": true
+    },
+    {
+      "check": "tampered feed rejected",
+      "passed": true
+    },
+    {
+      "check": "tampered archive rejected",
+      "passed": true
+    },
+    {
+      "check": "wrong signing key rejected",
+      "passed": true
+    }
+  ]
+}

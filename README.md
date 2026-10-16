@@ -1,6 +1,6 @@
 # CalDock
 
-轻巧的原生 macOS 菜单栏日历。Swift + AppKit + SwiftUI 实现，无 Electron、WebView、第三方依赖或后台服务。
+轻巧的原生 macOS 菜单栏日历。Swift + AppKit + SwiftUI 实现；应用内更新使用 Sparkle，无 Electron、WebView 或额外常驻后台服务。
 
 要求 macOS 14 或以上。Bundle ID：`com.yuhuo.caldock`。
 
@@ -34,7 +34,8 @@ open /Applications/CalDock.app
 - 紧凑六周月历、农历、传统节日、常用公历节日和二十四节气。
 - 2026 年官方放假和补班角标；未收录年份不猜测调休。
 - 系统日历事件圆点、跨天事件、当天日程、日历筛选与新建事件。
-- 通用、事件、样式、状态栏四个原生工具栏设置页；每个开关均连接实际行为。
+- 通用、事件、样式、状态栏、关于五个原生工具栏设置页；每个开关均连接实际行为。
+- “关于”显示当前版本、构建号与简介，支持手动检查更新和可关闭的每小时自动检查；发现更新后提示，确认才下载、安装并重启。
 - 面板主题和颜色、宽度、行高、字号可调整，默认宽 280 pt、行高 32 pt、字号比例 85%。
 - 状态栏图标、公历、农历、星期、时间、自定义日期格式，可开关和拖拽排序。
 - 图标默认以模板图像自动适配菜单栏明暗，也可固定为浅色或深色。
@@ -42,7 +43,7 @@ open /Applications/CalDock.app
 - 通知中心/桌面 WidgetKit 月历，支持小、中、大尺寸、午夜时间线、独立农历和调休显示设置。
 - 菜单栏面板及小组件分别保存深浅配色，每个颜色都可调整。
 
-系统日历授权和通知默认由用户主动开启。应用不上传日程，也不包含统计 SDK。事件编辑、删除和复杂重复规则可从“打开系统日历”入口完成。
+系统日历授权和通知默认由用户主动开启。应用不上传日程，也不包含统计 SDK；更新检查仅请求 GitHub 的签名更新源，关闭自动检查后仅在手动点击时请求。事件编辑、删除和复杂重复规则可从“打开系统日历”入口完成。
 
 在桌面右键或通知中心选择“编辑小组件”，搜索 CalDock 添加月历。在“样式 → 通知中心小组件”调整其主题、配色、农历、星期起始和字体。点击小组件打开今天的菜单栏日历。系统控制 Widget 刷新时间，设置变动会同步共享容器并请求更新。
 
@@ -94,6 +95,7 @@ open -W /Applications/CalDock.app --args --verify-system "$PWD/build/verificatio
 
 ```sh
 CALDOCK_SIGN_IDENTITY='Developer ID Application: Your Company (TEAMID)' \
+CALDOCK_SPARKLE_KEY_FILE='/path/to/private-update-key' \
 CALDOCK_NOTARY_PROFILE='your-keychain-profile' bash scripts/release.sh
 ```
 
@@ -103,15 +105,17 @@ CALDOCK_NOTARY_PROFILE='your-keychain-profile' bash scripts/release.sh
 
 [macOS build](https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml) 仅在推送 `v*` 版本标签时打包：先测试，再构建 Universal 应用、Developer ID 签名、Apple 公证和装订，最后从解压后的 ZIP 和只读挂载的 DMG 复核签名和票据。`main` 推送和 PR 只测试，不读取签名材料。成功后自动发布到对应的 [GitHub Release](https://github.com/yuhuotech/CalDock/releases)，上传 `CalDock-universal-<版本>.zip`、同名 DMG 及各自的 `.sha256`。仅发布任务拥有仓库写权限，签名任务保持只读；Universal 同时支持 Apple Silicon / arm64 和 Intel / x86_64。Actions Artifacts 也保留一份构建产物。
 
-发布新版本时，先同步修改 `Resources/Info.plist` 和 `Resources/Widget-Info.plist` 的 `CFBundleShortVersionString`，并递增两者的 `CFBundleVersion`，完整提交并推送后创建对应标签。例如当前 `0.1.2`：
+发布新版本时，先同步修改 `Resources/Info.plist` 和 `Resources/Widget-Info.plist` 的 `CFBundleShortVersionString`，并递增两者的 `CFBundleVersion`，完整提交并推送后创建对应标签。例如当前 `0.1.3`：
 
 ```sh
 git push origin main
-git tag -a v0.1.2 -m "CalDock 0.1.2"
-git push origin v0.1.2
+git tag -a v0.1.3 -m "CalDock 0.1.3"
+git push origin v0.1.3
 ```
 
-工作流校验标签、主程序和 Widget 的版本一致后才读取密钥。当前文件名为 `CalDock-universal-0.1.2.zip` 和 `CalDock-universal-0.1.2.dmg`，分别附 `.sha256` 校验文件。DMG 内含可拖入 `/Applications` 的应用和快捷方式；应用和 DMG 均装订票据，DMG 自身也经过签名、公证。本机运行发布脚本也使用相同命名，可用 `python3 scripts/verify-release.py` 复核两种产物。
+工作流校验标签、主程序和 Widget 的版本一致后才读取密钥。当前文件名为 `CalDock-universal-0.1.3.zip` 和 `CalDock-universal-0.1.3.dmg`，分别附 `.sha256` 校验文件。DMG 内含可拖入 `/Applications` 的应用和快捷方式；应用和 DMG 均装订票据，DMG 自身也经过签名、公证。本机运行发布脚本也使用相同命名，可用 `python3 scripts/verify-release.py` 复核两种产物。
+
+每次发布同时生成并上传 `appcast.xml`。客户端通过 `releases/latest/download/appcast.xml` 读取最新更新，校验更新源和 ZIP 的 Ed25519 签名，以及应用代码签名。`SUScheduledCheckInterval=3600`，开关由 Sparkle 持久化，禁用静默下载/安装与系统画像。更新提示不加载 WebView。Sparkle 安装辅助进程仅在更新期间运行。Apple 票据装订及 DMG 签名失败最多重试 4 次，失败时中止发布。
 
 仅更新打包方式时，可使用带构建元数据的标签，例如 `v0.1.0+packaging.1`，应用版本及文件名仍为 `0.1.0`，保留原有发布标签。版本校验只允许基础版本匹配的标签及合法构建元数据。
 
@@ -123,6 +127,7 @@ git push origin v0.1.2
 | Secret | `MACOS_CERTIFICATE_PASSWORD` | 导出 `.p12` 时的密码 |
 | Secret | `APPLE_ID` | Apple 开发者账号邮箱 |
 | Secret | `APPLE_APP_SPECIFIC_PASSWORD` | 此账号生成的 App 专用密码 |
+| Secret | `SPARKLE_ED_PRIVATE_KEY` | Sparkle 的 Base64 Ed25519 私钥种子，仅用于签名更新源和更新包；公钥嵌入 Info.plist |
 | Variable | `APPLE_TEAM_ID` | `3BH46GJY6D` |
 | Variable | `MACOS_SIGN_IDENTITY` | `Developer ID Application: Shanghai YuHuo Information Technology Co., Ltd. (3BH46GJY6D)` |
 
