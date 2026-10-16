@@ -25,6 +25,7 @@ public struct AppPreferences: Codable, Equatable {
     public var showHolidayBadges = true
     public var firstWeekday = 1
     public var holidayNotifications = false
+    public var automaticallyUpdatesHolidays: Bool? = true
     public var hideLunar = false
     public var hideFooter = false
     public var openOnHover = false

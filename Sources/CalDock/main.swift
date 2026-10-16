@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let args = ProcessInfo.processInfo.arguments
         if !args.contains("--verify-settings") && !args.contains("--verify-system") {
             SoftwareUpdater.shared.start()
+            HolidayUpdater.shared.start()
         }
         if let index = args.firstIndex(of: "--verify-settings") ?? args.firstIndex(of: "--verify-system"), args.count > index + 1, let controller {
             let output = URL(fileURLWithPath: args[index + 1])

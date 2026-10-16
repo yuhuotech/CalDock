@@ -2,6 +2,8 @@
 
 CalDock 使用 Swift、AppKit、SwiftUI、EventKit 和 WidgetKit；更新采用 Sparkle 2.10.0。要求 macOS 14+，建议使用与 CI 一致的 Xcode 16.4 或更新版本。依赖版本固定在 `Package.resolved`。
 
+节假日数据使用独立的每日白天更新机制，国内主备源、缓存格式、调度与联网验收命令见 [节假日自动更新](HOLIDAYS.md)。它与 Sparkle 软件更新相互独立。
+
 ## 本地构建
 
 ```sh

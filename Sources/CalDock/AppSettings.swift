@@ -6,6 +6,7 @@ import WidgetKit
 extension Notification.Name {
     static let calDockPreferencesChanged = Notification.Name("CalDockPreferencesChanged")
     static let calDockShowSettings = Notification.Name("CalDockShowSettings")
+    static let calDockHolidaysChanged = Notification.Name("CalDockHolidaysChanged")
 }
 
 @MainActor

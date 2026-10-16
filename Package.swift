@@ -10,6 +10,6 @@ let package = Package(
         .target(name: "CalendarCore", resources: [.process("Resources")]),
         .executableTarget(name: "CalDock", dependencies: ["CalendarCore", .product(name: "Sparkle", package: "Sparkle")],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]),
-        .testTarget(name: "CalendarCoreTests", dependencies: ["CalendarCore"])
+        .testTarget(name: "CalendarCoreTests", dependencies: ["CalendarCore"], resources: [.copy("Fixtures")])
     ]
 )

@@ -27,6 +27,7 @@ widget_dir="$app_dir/Contents/PlugIns/CalDockWidget.appex"
 mkdir -p "$widget_dir/Contents/MacOS" "$widget_dir/Contents/Resources"
 cp Resources/Widget-Info.plist "$widget_dir/Contents/Info.plist"
 cp Sources/CalendarCore/Resources/holidays.json "$widget_dir/Contents/Resources/"
+cp Sources/CalendarCore/Resources/HolidayData-LICENSE.txt "$widget_dir/Contents/Resources/"
 widget_arches=(arm64 x86_64)
 for widget_arch in "${widget_arches[@]}"; do
     core_dir="$PWD/build/widget-$widget_arch"

@@ -5,21 +5,29 @@ import WidgetKit
 struct MonthEntry: TimelineEntry {
     let date: Date
     let preferences: WidgetPreferences
+    var holidays: HolidayStore = HolidayStore()
 }
 
 struct MonthProvider: TimelineProvider {
     func placeholder(in context: Context) -> MonthEntry { MonthEntry(date: Date(), preferences: WidgetPreferences()) }
     func getSnapshot(in context: Context, completion: @escaping (MonthEntry) -> Void) {
-        completion(MonthEntry(date: Date(), preferences: SharedPreferences.read().widget ?? WidgetPreferences()))
+        completion(MonthEntry(date: Date(), preferences: SharedPreferences.read().widget ?? WidgetPreferences(), holidays: holidayStore()))
     }
     func getTimeline(in context: Context, completion: @escaping (Timeline<MonthEntry>) -> Void) {
         let settings = SharedPreferences.read().widget ?? WidgetPreferences()
         let now = Date()
         let calendar = Calendar.current
+        let holidays = holidayStore()
         let entries = (0..<8).map { offset in
-            MonthEntry(date: offset == 0 ? now : calendar.date(byAdding: .day, value: offset, to: calendar.startOfDay(for: now))!, preferences: settings)
+            MonthEntry(date: offset == 0 ? now : calendar.date(byAdding: .day, value: offset, to: calendar.startOfDay(for: now))!, preferences: settings, holidays: holidays)
         }
         completion(Timeline(entries: entries, policy: .atEnd))
+    }
+
+    private func holidayStore() -> HolidayStore {
+        let store = HolidayStore()
+        if let url = HolidayCache.fileURL { try? store.loadCache(from: url) }
+        return store
     }
 }
 
@@ -50,7 +58,7 @@ struct MonthWidgetView: View {
                 }
             }.font(.system(size: small ? 9 : 11)).foregroundStyle(Color(hex: palette[.title]))
             GeometryReader { geometry in
-                let rows = engine.monthGrid(entry.date)
+                let rows = engine.monthGrid(entry.date, holidays: entry.holidays)
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 0) {
                     ForEach(rows) { day in
                         let today = engine.calendar.isDate(day.date, inSameDayAs: entry.date)

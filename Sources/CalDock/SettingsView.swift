@@ -110,6 +110,7 @@ struct SettingsView: View {
     @ObservedObject private var login = LoginItemController.shared
     @ObservedObject private var notifier = HolidayNotifier.shared
     @ObservedObject private var updater = SoftwareUpdater.shared
+    @ObservedObject private var holidayUpdater = HolidayUpdater.shared
     @State private var recordingShortcut = false
     @State private var draggingModule: StatusModule?
     @State private var confirmReset = false
@@ -278,9 +279,30 @@ struct SettingsView: View {
             }
             Divider().padding(.vertical, 5)
             Text("节假日与节气").font(.system(size: 14, weight: .semibold))
-            note("已内置 2026 年中国大陆官方放假调休安排。其他年份仍显示传统节日与节气，不推算补班。节气为本地算法计算的日期，非精确交节时刻。")
-            Link("查看 2026 年官方放假通知 ↗", destination: URL(string: HolidayStore.shared.schedules.first?.source ?? "https://www.gov.cn")!)
-                .font(.system(size: 12))
+            HStack {
+                Toggle("自动更新法定节假日", isOn: Binding(
+                    get: { settings.value.automaticallyUpdatesHolidays ?? true },
+                    set: { settings.value.automaticallyUpdatesHolidays = $0 }
+                )).toggleStyle(.checkbox)
+                Spacer()
+                Button(holidayUpdater.isChecking ? "检查中…" : "立即检查") { holidayUpdater.checkNow() }
+                    .disabled(holidayUpdater.isChecking)
+            }
+            note("每天本机时间 10:00 检查当年及下一年安排；错过后在 08:00–22:00 启动或唤醒时补查，不唤醒电脑。断网继续使用本地数据。")
+            note("已收录：\(holidayUpdater.years.map(String.init).joined(separator: "、")) 年 · \(holidayUpdater.sourceSummary)")
+            if let attempt = holidayUpdater.state.lastAttempt {
+                note("最近检查：\(attempt.formatted(date: .numeric, time: .shortened))")
+            }
+            if let success = holidayUpdater.state.lastSuccess {
+                note("最近成功：\(success.formatted(date: .numeric, time: .shortened))")
+            }
+            note(holidayUpdater.message)
+            HStack(spacing: 12) {
+                ForEach(HolidayDataSource.allCases, id: \.rawValue) { source in
+                    Link(source.name + " ↗", destination: source.website)
+                }
+            }.font(.system(size: 10))
+            note("主源 Gitee，失败后依次切换提莫、程序世界；不通过 GitHub 获取节假日数据。未收录年份不推算补班；节气为本地算法日期，非精确交节时刻。")
             note("节日通知在前一天 18:00 提醒，按本机时区安排。不会向任何服务器上传日程。")
         }
     }

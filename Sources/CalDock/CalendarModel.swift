@@ -189,6 +189,8 @@ final class CalendarModel: ObservableObject {
 
     init() {
         provider.$events.receive(on: RunLoop.main).sink { [weak self] events in self?.indexEvents(events) }.store(in: &subscriptions)
+        NotificationCenter.default.publisher(for: .calDockHolidaysChanged).receive(on: RunLoop.main)
+            .sink { [weak self] _ in if self?.active == true { self?.refresh() } }.store(in: &subscriptions)
     }
 
     func open() {
