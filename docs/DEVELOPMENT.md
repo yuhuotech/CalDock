@@ -69,6 +69,16 @@ Sparkle 的 Ed25519 私钥与 Apple 签名证书是两种不同材料。公钥�
 
 [macOS build](https://github.com/yuhuotech/CalDock/actions/workflows/macos.yml) 在 `main` 推送和 PR 时只测试，仅推送 `v*` 标签时打包、校验并发布 GitHub Release。发布任务单独具有 `contents:write` 权限，签名任务保持只读。
 
+Apple 票据下载曾在 GitHub macOS Runner 上因 HTTP/3/UDP 443 断连而报 `NSURLErrorDomain -1005`、`stapler Error 68`。GitHub 官方已复现并提供 [临时修复](https://github.com/actions/runner-images/issues/14924#issuecomment-6188826956)：仅在云端打包虚拟机中禁用出站 UDP 443，使请求回退到 HTTPS/TCP。工作流已采用该处理；保留原有公证、装订、Gatekeeper 校验及有限重试，不修改用户电脑网络。
+
+若已有标签的工作流因基础设施问题失败，可在 main 上手动运行当前工作流，输入原始标签重新测试、构建并发布；应用源码仍从该标签读取，版本校验仍必须通过，不移动原标签，也不把 main 当作发布源码：
+
+```sh
+gh workflow run macos.yml --ref main -f release_tag=v0.1.5
+```
+
+手动重建与同一标签的自动任务共用并发组，避免同时发布。只在需要恢复发布时使用；普通 main 推送仍只执行 test。
+
 在仓库 Settings → Secrets and variables → Actions 配置：
 
 | 类型 | 名称 | 用途 |
