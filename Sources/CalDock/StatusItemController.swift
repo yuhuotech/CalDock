@@ -17,8 +17,6 @@ final class PanelController: NSObject, NSWindowDelegate {
     private var localMonitor: Any?
     private var globalMonitor: Any?
     private var keyMonitor: Any?
-    private var mouseMonitor: Any?
-    private var mouseExitWork: DispatchWorkItem?
     private var interactionObservation: NSObjectProtocol?
     private var interactionEndObservation: NSObjectProtocol?
     private var interactionDepth = 0
@@ -109,15 +107,13 @@ final class PanelController: NSObject, NSWindowDelegate {
 
     func close() {
         guard visible else { return }
-        mouseExitWork?.cancel()
-        mouseExitWork = nil
         panel?.orderOut(nil)
         panel?.contentView = nil
         host = nil
         scroll = nil
         model.close()
-        for monitor in [localMonitor, globalMonitor, keyMonitor, mouseMonitor].compactMap({ $0 }) { NSEvent.removeMonitor(monitor) }
-        localMonitor = nil; globalMonitor = nil; keyMonitor = nil; mouseMonitor = nil
+        for monitor in [localMonitor, globalMonitor, keyMonitor].compactMap({ $0 }) { NSEvent.removeMonitor(monitor) }
+        localMonitor = nil; globalMonitor = nil; keyMonitor = nil
         interactionDepth = 0
         visibilityChanged?(false)
         // A nonactivating panel normally preserves the foreground app already.
@@ -141,25 +137,6 @@ final class PanelController: NSObject, NSWindowDelegate {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self else { return }
             if self.shouldClose(at: NSEvent.mouseLocation, window: nil) { self.close() }
-        }
-        mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
-            guard let self else { return }
-            let point = NSEvent.mouseLocation
-            guard self.shouldCloseOnMouseExit(at: point) else {
-                self.mouseExitWork?.cancel()
-                self.mouseExitWork = nil
-                return
-            }
-            guard self.mouseExitWork == nil else { return }
-            // A short grace period prevents the panel from disappearing while
-            // the pointer crosses its edge or the menu-bar anchor.
-            let work = DispatchWorkItem { [weak self] in
-                guard let self else { return }
-                self.mouseExitWork = nil
-                if self.shouldCloseOnMouseExit(at: NSEvent.mouseLocation) { self.close() }
-            }
-            self.mouseExitWork = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(600), execute: work)
         }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, event.window === self.panel else { return event }
@@ -192,23 +169,10 @@ final class PanelController: NSObject, NSWindowDelegate {
 
     private func shouldClose(at point: NSPoint, window: NSWindow?) -> Bool {
         guard visible, !model.isPinned, interactionDepth == 0 else { return false }
-        if interactionRegion.contains(point) { return false }
+        if panel?.frame.contains(point) == true || anchor?.contains(point) == true { return false }
         // Popovers and other CalDock windows are outside the main panel frame,
         // but interaction inside them must not be treated as an outside click.
         if let window, NSApp.windows.contains(where: { $0 === window && $0.isVisible }) { return false }
-        if NSApp.windows.contains(where: { $0 !== panel && $0.isVisible && $0.frame.contains(point) }) { return false }
-        return true
-    }
-
-    private var interactionRegion: NSRect {
-        var region = panel?.frame.insetBy(dx: -10, dy: -10) ?? .zero
-        if let anchor { region = region.union(anchor.insetBy(dx: -10, dy: -10)) }
-        return region
-    }
-
-    private func shouldCloseOnMouseExit(at point: NSPoint) -> Bool {
-        guard visible, !model.isPinned, interactionDepth == 0 else { return false }
-        if interactionRegion.contains(point) { return false }
         if NSApp.windows.contains(where: { $0 !== panel && $0.isVisible && $0.frame.contains(point) }) { return false }
         return true
     }
