@@ -205,5 +205,21 @@ struct CalendarView: View {
 }
 
 func openSystemCalendar(_ date: Date) {
-    if let url = URL(string: "calshow:\(date.timeIntervalSinceReferenceDate)") { NSWorkspace.shared.open(url) }
+    let calendar = NSWorkspace.shared
+    if let url = URL(string: "calshow:\(date.timeIntervalSinceReferenceDate)"),
+       let handler = calendar.urlForApplication(toOpen: url),
+       handler.pathExtension == "app" {
+        calendar.open(url)
+        return
+    }
+
+    // Some macOS installations have no registered calshow handler. Opening the
+    // Calendar app directly avoids LaunchServices showing an app-picker dialog.
+    let candidates = [
+        URL(fileURLWithPath: "/System/Applications/Calendar.app"),
+        URL(fileURLWithPath: "/Applications/Calendar.app")
+    ]
+    if let app = candidates.first(where: { FileManager.default.fileExists(atPath: $0.path) }) {
+        calendar.open(app)
+    }
 }
