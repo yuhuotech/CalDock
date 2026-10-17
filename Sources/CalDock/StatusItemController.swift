@@ -17,6 +17,10 @@ final class PanelController: NSObject, NSWindowDelegate {
     private var localMonitor: Any?
     private var globalMonitor: Any?
     private var keyMonitor: Any?
+    private var mouseMonitor: Any?
+    private var interactionObservation: NSObjectProtocol?
+    private var interactionEndObservation: NSObjectProtocol?
+    private var interactionDepth = 0
     private var anchor: NSRect?
     private var previousApplication: NSRunningApplication?
     var visible: Bool { panel?.isVisible == true }
@@ -30,6 +34,12 @@ final class PanelController: NSObject, NSWindowDelegate {
     override init() {
         super.init()
         model.resize = { [weak self] in self?.resize() }
+        interactionObservation = NotificationCenter.default.addObserver(forName: .calDockInteractionBegan, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.interactionDepth += 1 }
+        }
+        interactionEndObservation = NotificationCenter.default.addObserver(forName: .calDockInteractionEnded, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.interactionDepth = max(0, (self?.interactionDepth ?? 1) - 1) }
+        }
     }
 
     func toggle(anchor: NSRect?) { if visible { close() } else { show(anchor: anchor) } }
@@ -103,8 +113,9 @@ final class PanelController: NSObject, NSWindowDelegate {
         host = nil
         scroll = nil
         model.close()
-        for monitor in [localMonitor, globalMonitor, keyMonitor].compactMap({ $0 }) { NSEvent.removeMonitor(monitor) }
-        localMonitor = nil; globalMonitor = nil; keyMonitor = nil
+        for monitor in [localMonitor, globalMonitor, keyMonitor, mouseMonitor].compactMap({ $0 }) { NSEvent.removeMonitor(monitor) }
+        localMonitor = nil; globalMonitor = nil; keyMonitor = nil; mouseMonitor = nil
+        interactionDepth = 0
         visibilityChanged?(false)
         // A nonactivating panel normally preserves the foreground app already.
         if NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier,
@@ -121,16 +132,16 @@ final class PanelController: NSObject, NSWindowDelegate {
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
             guard let self else { return event }
             let point = NSEvent.mouseLocation
-            if !self.model.isPinned && event.window !== self.panel,
-               self.panel?.frame.contains(point) != true,
-               self.anchor?.contains(point) != true { self.close() }
+            if self.shouldClose(at: point, window: event.window) { self.close() }
             return event
         }
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            guard let self, !self.model.isPinned,
-                  self.panel?.frame.contains(NSEvent.mouseLocation) != true,
-                  self.anchor?.contains(NSEvent.mouseLocation) != true else { return }
-            self.close()
+            guard let self else { return }
+            if self.shouldClose(at: NSEvent.mouseLocation, window: nil) { self.close() }
+        }
+        mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
+            guard let self else { return }
+            if self.shouldClose(at: NSEvent.mouseLocation, window: nil) { self.close() }
         }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, event.window === self.panel else { return event }
@@ -152,6 +163,16 @@ final class PanelController: NSObject, NSWindowDelegate {
             }
             return event
         }
+    }
+
+    private func shouldClose(at point: NSPoint, window: NSWindow?) -> Bool {
+        guard visible, !model.isPinned, interactionDepth == 0 else { return false }
+        if panel?.frame.contains(point) == true || anchor?.contains(point) == true { return false }
+        // Popovers and other CalDock windows are outside the main panel frame,
+        // but interaction inside them must not be treated as an outside click.
+        if let window, NSApp.windows.contains(where: { $0 === window && $0.isVisible }) { return false }
+        if NSApp.windows.contains(where: { $0 !== panel && $0.isVisible && $0.frame.contains(point) }) { return false }
+        return true
     }
 }
 

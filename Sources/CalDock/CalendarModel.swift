@@ -84,8 +84,10 @@ final class EventProvider: ObservableObject {
 
     func requestAccess() {
         let store = getStore()
+        NotificationCenter.default.post(name: .calDockInteractionBegan, object: nil)
         store.requestFullAccessToEvents { [weak self] granted, error in
             Task { @MainActor in
+                NotificationCenter.default.post(name: .calDockInteractionEnded, object: nil)
                 guard let self else { return }
                 self.authorized = granted
                 self.error = error?.localizedDescription ?? (granted ? nil : "日历访问未授权。可在系统设置 → 隐私与安全性 → 日历中允许 CalDock。")

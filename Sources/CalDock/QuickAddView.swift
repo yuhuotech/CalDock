@@ -37,8 +37,10 @@ final class ReminderProvider: ObservableObject {
     }
 
     func requestAccess() {
+        NotificationCenter.default.post(name: .calDockInteractionBegan, object: nil)
         getStore().requestFullAccessToReminders { [weak self] granted, error in
             Task { @MainActor in
+                NotificationCenter.default.post(name: .calDockInteractionEnded, object: nil)
                 guard let self else { return }
                 self.authorized = granted
                 self.error = error?.localizedDescription ?? (granted ? nil : "提醒事项访问未授权。可在系统设置 → 隐私与安全性 → 提醒事项中允许 CalDock。")
@@ -117,10 +119,12 @@ struct QuickAddView: View {
         }
         .font(.system(size: 12)).controlSize(.small).padding(13).frame(width: 278)
         .onAppear {
+            NotificationCenter.default.post(name: .calDockInteractionBegan, object: nil)
             events.refreshCalendars(); reminders.refreshLists()
             calendarID = events.calendars.first(where: \.writable)?.id ?? ""
             listID = reminders.lists.first(where: \.writable)?.id ?? ""
         }
+        .onDisappear { NotificationCenter.default.post(name: .calDockInteractionEnded, object: nil) }
         .onChange(of: events.authorized) { _, granted in
             if granted {
                 events.refreshCalendars()

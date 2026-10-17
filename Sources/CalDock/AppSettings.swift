@@ -7,6 +7,8 @@ extension Notification.Name {
     static let calDockPreferencesChanged = Notification.Name("CalDockPreferencesChanged")
     static let calDockShowSettings = Notification.Name("CalDockShowSettings")
     static let calDockHolidaysChanged = Notification.Name("CalDockHolidaysChanged")
+    static let calDockInteractionBegan = Notification.Name("CalDockInteractionBegan")
+    static let calDockInteractionEnded = Notification.Name("CalDockInteractionEnded")
 }
 
 @MainActor
