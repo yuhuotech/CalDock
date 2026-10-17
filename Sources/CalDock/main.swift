@@ -9,11 +9,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         installMainMenu()
         controller = StatusItemController()
         let args = ProcessInfo.processInfo.arguments
-        if !args.contains("--verify-settings") && !args.contains("--verify-system") {
+        if !args.contains("--verify-settings") && !args.contains("--verify-system") && !args.contains("--verify-quick-actions") {
 #if !CALDOCK_DEV_BUILD
             SoftwareUpdater.shared.start()
 #endif
             HolidayUpdater.shared.start()
+        }
+        if let index = args.firstIndex(of: "--verify-quick-actions"), args.count > index + 1 {
+            Task { @MainActor in
+                let passed = await QuickActionsVerification.run(output: URL(fileURLWithPath: args[index + 1]))
+                print("Quick actions verification: \(passed ? "PASS" : "FAIL")")
+                NSApp.terminate(nil)
+            }
         }
         if let index = args.firstIndex(of: "--verify-settings") ?? args.firstIndex(of: "--verify-system"), args.count > index + 1, let controller {
             let output = URL(fileURLWithPath: args[index + 1])

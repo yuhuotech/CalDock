@@ -6,10 +6,14 @@ struct CalendarView: View {
     @ObservedObject var settings = AppSettings.shared
     @ObservedObject var model: CalendarModel
     @ObservedObject var provider = EventProvider.shared
+    @ObservedObject private var reminders = ReminderProvider.shared
     @Environment(\.colorScheme) private var colorScheme
     @State private var hoverDate: Date?
     @State private var quickAddPresented = false
-    @State private var eventToDelete: CalendarEvent?
+    @State private var editingEvent: CalendarEvent?
+    @State private var editingReminder: CalendarReminder?
+    @State private var confirmingDeleteID: String?
+    @State private var agendaError: String?
     private var p: AppPreferences { settings.value }
     private var dark: Bool { p.appearance == "dark" || (p.appearance == "system" && colorScheme == .dark) }
     private var palette: CalendarPalette { p.palette(dark: dark) }
@@ -35,6 +39,17 @@ struct CalendarView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.primary.opacity(0.14), lineWidth: 0.5))
         .frame(width: p.panelWidth)
+        .onAppear { reminders.setActive(model.agendaVisible, day: model.selected) }
+        .onDisappear { reminders.setActive(false, day: model.selected) }
+        .onChange(of: model.agendaVisible) { _, visible in reminders.setActive(visible, day: model.selected) }
+        .onChange(of: model.selected) { _, date in
+            confirmingDeleteID = nil; agendaError = nil
+            if model.agendaVisible { reminders.load(day: date) }
+        }
+        .onChange(of: reminders.reminders.count) { _, _ in model.resize?() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            if model.agendaVisible { reminders.setActive(true, day: model.selected) }
+        }
     }
 
     private var header: some View {
@@ -143,10 +158,15 @@ struct CalendarView: View {
             HStack {
                 Text(StatusFormatter().string(model.selected, pattern: "M月d日 EEEE")).font(.system(size: 12, weight: .semibold))
                 Spacer()
-                if provider.loading { ProgressView().controlSize(.mini) }
-                Button { quickAddPresented = true } label: { Image(systemName: "plus") }
+                if provider.loading || reminders.loading { ProgressView().controlSize(.mini) }
+                Button {
+                    editingEvent = nil; editingReminder = nil
+                    quickAddPresented = true
+                } label: { Image(systemName: "plus") }
                     .buttonStyle(.plain).help("快速添加事件或提醒")
-                    .popover(isPresented: $quickAddPresented, arrowEdge: .bottom) { QuickAddView(date: model.selected) }
+                    .background(QuickEditorPopover(isPresented: $quickAddPresented) {
+                        QuickAddView(date: model.selected, onClose: { quickAddPresented = false })
+                    })
                 Button { openSystemCalendar(model.selected) } label: { Image(systemName: "arrow.up.forward.app") }.buttonStyle(.plain).help("在系统日历中打开或添加事件")
                 Button { model.agendaVisible = false; model.resize?() } label: { Image(systemName: "xmark") }.buttonStyle(.plain).help("收起日程")
             }
@@ -156,50 +176,80 @@ struct CalendarView: View {
                     Spacer(minLength: 0)
                     Button("连接") { provider.requestAccess() }.controlSize(.small)
                 }
-            } else if model.selectedEvents.isEmpty {
+            }
+            if model.selectedEvents.isEmpty && reminders.reminders.isEmpty {
                 Text("当天没有日程").font(.system(size: 12)).foregroundStyle(secondary).padding(.vertical, 3)
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 9) {
-                        ForEach(model.selectedEvents) { event in
-                            HStack(alignment: .top, spacing: 8) {
-                                RoundedRectangle(cornerRadius: 1.5).fill(event.color).frame(width: 3)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(event.title).font(.system(size: 12, weight: .medium)).lineLimit(2)
-                                    Text(event.allDay ? "全天 · \(event.calendarTitle)" : "\(StatusFormatter().string(event.start, pattern: "M/d HH:mm")) – \(StatusFormatter().string(event.end, pattern: "M/d HH:mm"))")
-                                        .font(.system(size: 10)).foregroundStyle(secondary)
-                                    if !event.location.isEmpty { Text(event.location).font(.system(size: 10)).foregroundStyle(secondary).lineLimit(1) }
-                                }
-                                Spacer(minLength: 0)
-                            }.fixedSize(horizontal: false, vertical: true)
-                                .contextMenu {
-                                    if event.eventIdentifier != nil && event.writable {
-                                        Button("删除事件", role: .destructive) { eventToDelete = event }
-                                    }
-                                }
-                        }
+                        ForEach(model.selectedEvents) { event in eventRow(event) }
+                        ForEach(reminders.reminders) { reminder in reminderRow(reminder) }
                     }
-                }.frame(height: min(CGFloat(model.selectedEvents.count) * 51, 166))
+                }.frame(height: min(CGFloat(model.selectedEvents.count + reminders.reminders.count) * 51, 166))
+            }
+            if let agendaError {
+                Text(agendaError).font(.system(size: 10)).foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.horizontal, 16).padding(.top, 5).padding(.bottom, 7)
-        .confirmationDialog("删除这个系统日历事件？", isPresented: Binding(
-            get: { eventToDelete != nil },
-            set: { if !$0 { eventToDelete = nil } }
-        ), titleVisibility: .visible) {
-            Button("删除", role: .destructive) {
-                if let event = eventToDelete { delete(event) }
-                eventToDelete = nil
-            }
-            Button("取消", role: .cancel) { eventToDelete = nil }
-        } message: {
-            Text("删除后会同步到 macOS 日历。")
-        }
     }
 
-    private func delete(_ event: CalendarEvent) {
-        do { try provider.delete(event) }
-        catch { NSSound.beep() }
+    private func eventRow(_ event: CalendarEvent) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            RoundedRectangle(cornerRadius: 1.5).fill(event.color).frame(width: 3)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(event.title).font(.system(size: 12, weight: .medium)).lineLimit(2)
+                Text(event.allDay ? "全天 · \(event.calendarTitle)" : "\(StatusFormatter().string(event.start, pattern: "M/d HH:mm")) – \(StatusFormatter().string(event.end, pattern: "M/d HH:mm"))")
+                    .font(.system(size: 10)).foregroundStyle(secondary)
+                if !event.location.isEmpty { Text(event.location).font(.system(size: 10)).foregroundStyle(secondary).lineLimit(1) }
+            }.frame(maxWidth: .infinity, alignment: .leading)
+            if event.writable && event.eventIdentifier != nil {
+                rowActions(id: "event-" + event.id, label: "事件", edit: {
+                    quickAddPresented = false; editingReminder = nil; editingEvent = event
+                }, delete: { try provider.delete(event) })
+                    .background(QuickEditorPopover(isPresented: Binding(get: { editingEvent?.id == event.id }, set: { if !$0 { editingEvent = nil } })) {
+                        QuickAddView(date: event.start, editing: event, onClose: { editingEvent = nil })
+                    })
+            }
+        }.fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func reminderRow(_ reminder: CalendarReminder) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: "checklist").font(.system(size: 10)).foregroundStyle(secondary).frame(width: 12)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(reminder.title).font(.system(size: 12, weight: .medium)).lineLimit(2)
+                Text("提醒 · " + (reminder.hasTime ? StatusFormatter().string(reminder.dueDate!, pattern: "HH:mm") : "全天") + " · " + reminder.listTitle)
+                    .font(.system(size: 10)).foregroundStyle(secondary).lineLimit(1)
+            }.frame(maxWidth: .infinity, alignment: .leading)
+            if reminder.writable {
+                rowActions(id: "reminder-" + reminder.id, label: "提醒", edit: {
+                    quickAddPresented = false; editingEvent = nil; editingReminder = reminder
+                }, delete: { try reminders.delete(reminder) })
+                    .background(QuickEditorPopover(isPresented: Binding(get: { editingReminder?.id == reminder.id }, set: { if !$0 { editingReminder = nil } })) {
+                        QuickAddView(date: model.selected, editingReminder: reminder, onClose: { editingReminder = nil })
+                    })
+            }
+        }.fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func rowActions(id: String, label: String, edit: @escaping () -> Void, delete: @escaping () throws -> Void) -> some View {
+        HStack(spacing: 2) {
+            if confirmingDeleteID == id {
+                Button("删除") {
+                    do { try delete(); confirmingDeleteID = nil; agendaError = nil }
+                    catch { agendaError = error.localizedDescription; model.resize?() }
+                }.foregroundStyle(.red).help("确认删除" + label + "，同步到系统")
+                Button { confirmingDeleteID = nil } label: { Image(systemName: "xmark").frame(width: 18, height: 20) }
+                    .help("取消删除")
+            } else {
+                Button { confirmingDeleteID = nil; agendaError = nil; edit() } label: { Image(systemName: "pencil").frame(width: 18, height: 20) }
+                    .help("编辑" + label).accessibilityLabel("编辑" + label)
+                Button { confirmingDeleteID = id } label: { Image(systemName: "trash").frame(width: 18, height: 20) }
+                    .help("删除" + label).accessibilityLabel("删除" + label)
+            }
+        }.buttonStyle(.plain).font(.system(size: 10)).foregroundStyle(secondary)
     }
 
     private var footer: some View {

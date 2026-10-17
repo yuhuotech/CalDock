@@ -29,13 +29,19 @@ plutil -replace CFBundleURLTypes.0.CFBundleURLName -string "com.yuhuo.caldock.lo
 plutil -replace CFBundleURLTypes.0.CFBundleURLSchemes.0 -string "caldock-local" "$app_dir/Contents/Info.plist"
 plutil -replace SUEnableAutomaticChecks -bool false "$app_dir/Contents/Info.plist"
 
-codesign --force --sign - "$app_dir/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
+# A stable signing requirement lets TCC retain test-app grants across rebuilds.
+local_identity="${CALDOCK_LOCAL_SIGN_IDENTITY:-}"
+if [[ -z "$local_identity" ]]; then
+    local_identity="$(security find-identity -v -p codesigning | awk '/Developer ID Application:.*\(3BH46GJY6D\)/ {print $2; exit}')"
+fi
+local_identity="${local_identity:--}"
+codesign --force --sign "$local_identity" --timestamp=none "$app_dir/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
 for component in "$app_dir/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app" \
     "$app_dir/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc" \
     "$app_dir/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc"; do
-    codesign --force --sign - "$component"
+    codesign --force --sign "$local_identity" --timestamp=none "$component"
 done
-codesign --force --sign - "$app_dir/Contents/Frameworks/Sparkle.framework"
-codesign --force --sign - "$app_dir"
+codesign --force --sign "$local_identity" --timestamp=none "$app_dir/Contents/Frameworks/Sparkle.framework"
+codesign --force --sign "$local_identity" --timestamp=none "$app_dir"
 codesign --verify --deep --strict "$app_dir"
 printf 'Built local test app: %s\n' "$app_dir"

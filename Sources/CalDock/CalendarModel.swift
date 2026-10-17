@@ -21,6 +21,7 @@ struct CalendarEvent: Identifiable {
     let location: String
     let color: Color
     let calendarTitle: String
+    let calendarIdentifier: String
     let writable: Bool
 }
 
@@ -34,6 +35,8 @@ private final class EventReader: @unchecked Sendable {
             let store: EKEventStore
             if let existing = self.store { store = existing }
             else { store = EKEventStore(); self.store = store }
+            // Refresh this queue's cache after writes from another EventKit store.
+            store.reset()
             let calendars = store.calendars(for: .event).filter { !disabled.contains($0.calendarIdentifier) }
             guard !calendars.isEmpty else { completion([]); return }
             let predicate = store.predicateForEvents(withStart: range.start, end: range.end, calendars: calendars)
@@ -43,6 +46,7 @@ private final class EventReader: @unchecked Sendable {
                               title: event.title ?? "未命名事件", start: event.startDate, end: event.endDate,
                               allDay: event.isAllDay, location: event.location ?? "",
                               color: Color(cgColor: event.calendar.cgColor), calendarTitle: event.calendar.title,
+                              calendarIdentifier: event.calendar.calendarIdentifier,
                               writable: event.calendar.allowsContentModifications)
             })
         }
@@ -76,6 +80,8 @@ final class EventProvider: ObservableObject {
                 self.refreshTask = Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(250))
                     guard !Task.isCancelled else { return }
+                    self.store?.reset()
+                    self.refreshCalendars()
                     if self.active, let range = self.lastRange { self.load(range: range, disabled: self.lastDisabled, force: true) }
                 }
             }
@@ -123,6 +129,7 @@ final class EventProvider: ObservableObject {
     }
 
     func refresh() {
+        store?.reset()
         refreshCalendars()
         if let range = lastRange { load(range: range, disabled: lastDisabled, force: true) }
     }
@@ -165,13 +172,42 @@ final class EventProvider: ObservableObject {
 
     func delete(_ event: CalendarEvent) throws {
         guard authorized else { throw EventError.noAccess }
-        guard let identifier = event.eventIdentifier, let value = getStore().event(withIdentifier: identifier) else {
-            throw EventError.noEvent
-        }
+        let value = try storedEvent(event)
         guard value.calendar?.allowsContentModifications == true else { throw EventError.noCalendar }
         try getStore().remove(value, span: .thisEvent, commit: true)
         dirty = true
         if let range = lastRange { load(range: range, disabled: lastDisabled, force: true) }
+    }
+
+    func update(_ event: CalendarEvent, title: String, start: Date, end: Date, allDay: Bool, calendarID: String) throws {
+        guard authorized else { throw EventError.noAccess }
+        guard end > start else { throw EventError.invalidRange }
+        let value = try storedEvent(event)
+        guard value.calendar?.allowsContentModifications == true else { throw EventError.noCalendar }
+        guard let calendar = getStore().calendar(withIdentifier: calendarID), calendar.allowsContentModifications else {
+            throw EventError.noCalendar
+        }
+        value.title = title; value.startDate = start; value.endDate = end
+        value.isAllDay = allDay; value.calendar = calendar
+        try getStore().save(value, span: .thisEvent, commit: true)
+        dirty = true
+        if let range = lastRange { load(range: range, disabled: lastDisabled, force: true) }
+    }
+
+    private func storedEvent(_ event: CalendarEvent) throws -> EKEvent {
+        guard let identifier = event.eventIdentifier, let value = getStore().event(withIdentifier: identifier) else {
+            throw EventError.noEvent
+        }
+        // EventKit identifiers can refer to an entire recurring series. Resolve
+        // the occurrence shown in this row before editing or deleting thisEvent.
+        if value.hasRecurrenceRules || value.startDate != event.start {
+            let predicate = getStore().predicateForEvents(withStart: event.start, end: max(event.end, event.start.addingTimeInterval(1)), calendars: [value.calendar])
+            guard let occurrence = getStore().events(matching: predicate).first(where: {
+                $0.eventIdentifier == identifier && $0.startDate == event.start
+            }) else { throw EventError.noEvent }
+            return occurrence
+        }
+        return value
     }
 
     enum EventError: LocalizedError {
@@ -181,7 +217,7 @@ final class EventProvider: ObservableObject {
             case .noAccess: return "请先允许访问系统日历。"
             case .invalidRange: return "结束时间必须晚于开始时间。"
             case .noCalendar: return "请选择可写入的日历。"
-            case .noEvent: return "这个事件已在系统日历中被删除。"
+            case .noEvent: return "这个事件已在系统日历中被删除或不可编辑。"
             }
         }
     }

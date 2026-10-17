@@ -32,6 +32,8 @@ bash scripts/install-app.sh
 open /Applications/CalDock.app
 ```
 
+需要与已安装的正式版并行测试时，使用 `bash scripts/build-local-test.sh`，将 `build/CalDock-local.app` 复制到 `/Applications/CalDock-local.app` 后打开。测试版使用独立 Bundle ID、偏好和缓存，不启动软件更新或安装小组件。它仍访问同一份系统日历／提醒数据，请只使用可清理的测试数据。脚本优先复用项目团队的 Developer ID，也可通过 `CALDOCK_LOCAL_SIGN_IDENTITY` 指定身份；稳定签名可避免每次重新构建后丢失系统授权，无证书时退回临时签名。
+
 ## 验证
 
 ```sh
@@ -44,6 +46,15 @@ open -W /Applications/CalDock.app --args \
 ```
 
 设置验收使用独立显示偏好域，更新开关验证后恢复原值。系统验收需要用户已授予日历和通知权限，会创建并清理临时日历/事件、测试通知及登录项后恢复状态。请在专门的本机测试会话中运行，不在托管 CI 执行。必须经 LaunchServices 启动系统验收，直接执行二进制的 TCC 归属不同。
+
+事件和提醒的增删改另有真实系统验收，需要先在本地测试版授予日历和提醒事项完全访问权限，退出测试版后执行：
+
+```sh
+open -W -a /Applications/CalDock-local.app --args \
+  --verify-quick-actions "$PWD/build/verification-quick-actions.json"
+```
+
+该验收使用独立临时日历和提醒列表，验证授权状态、提醒时间／闹钟、列表刷新、事件详情保留、重复事件单次编辑／删除及清理。它不会修改已有日程，报告不包含用户日程内容；不覆盖首次系统授权框和编辑按钮等原生交互，这些仍需手动界面验收。
 
 空闲取样：关闭月历与设置，使用 `scripts/measure-idle.py <PID> --seconds 60`。不同系统、日历数量和显示设置会影响结果；短时间取样不等于完整耗电测试。
 

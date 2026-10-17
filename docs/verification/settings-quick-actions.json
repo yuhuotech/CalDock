@@ -1,0 +1,307 @@
+{
+  "checks" : [
+    {
+      "check" : "updater.manual-check-available",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "updater.hourly-interval",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "updater.disable-automatic",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "updater.enable-and-persist",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "updater.version-from-bundle",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "settings.about-page",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "settings.all-five-tabs-visible",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.compact-default",
+      "detail" : "(280.0, 276.0)",
+      "passed" : true
+    },
+    {
+      "check" : "panel.width",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.height",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.hide-footer-reduces-height",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.hide-lunar",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.holiday-badges",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.light.background",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.light.title",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.light.date",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.light.weekend",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.light.festival",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.light.today",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.light.event",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.light.work",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.light.rest",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.dark.background",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.dark.title",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.dark.date",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.dark.weekend",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.dark.festival",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.dark.today",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.dark.event",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.dark.work",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "palette.dark.rest",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.event-dots",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.font-size",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "calendar.first-weekday",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.agenda-setting",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.dark-appearance",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.light-appearance",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.system-appearance",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "hover.enabled",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "hover.disabled",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "status.automatic-template",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "status.icon-style",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "status.fixed-light",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "status.fixed-dark",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "status.all-text-modules",
+      "detail" : "10月17日 初八 周六 11:47 CalDock 2026-10-17",
+      "passed" : true
+    },
+    {
+      "check" : "status.icon-disabled",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "status.module-order",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "status.seconds-timer",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "status.custom-seconds-timer",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "status.idle-minute-timer",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "shortcut.disabled",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "shortcut.registered",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "settings.persistence",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "settings.reset",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.animation",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "calendar.midnight-follows-today",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "lifecycle.wake-refresh",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "lifecycle.timezone-refresh",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "panel.stress-125-cycles",
+      "detail" : "physical footprint 78529592 → 51528760 bytes",
+      "passed" : true
+    },
+    {
+      "check" : "panel.release-on-close",
+      "detail" : "",
+      "passed" : true
+    }
+  ],
+  "date" : "2026-10-17T03:48:06Z",
+  "passed" : true,
+  "system" : false
+}

@@ -1,0 +1,116 @@
+{
+  "checks" : [
+    {
+      "check" : "reminder.authorization",
+      "detail" : "system=3, provider=true, lists=3",
+      "passed" : true
+    },
+    {
+      "check" : "event.authorization",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.reconnect-keeps-access",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.list-published",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.create-and-list",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.system-persisted",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.update-and-list",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.system-update",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.latest-day-wins",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.delete-and-list",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.system-delete",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "reminder.cleanup",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.external-calendar-published",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.create-and-list",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.update-and-list",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.system-update-preserves-details",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.delete-and-list",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.system-delete",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.recurring-update",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.recurring-system-delete",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.recurring-preserves-other-occurrences",
+      "detail" : "",
+      "passed" : true
+    },
+    {
+      "check" : "event.cleanup",
+      "detail" : "",
+      "passed" : true
+    }
+  ],
+  "date" : "2026-10-17T03:47:34Z",
+  "passed" : true
+}
