@@ -26,6 +26,6 @@ python3 -m http.server 8787 --bind 127.0.0.1 --directory website
 
 - `app-icon.png`：项目现有应用图标。
 - `calendar-light.png` / `calendar-dark.png`：由当前生产代码中的 `CalendarView` 离屏导出，使用内存偏好和示例月份，不读取个人日程，不创建应用实例。
-- `about.png`：0.1.3 的实际设置页验收截图。
+- `about.png`：关于与软件更新页的实际设置截图。
 
 更新截图时保留真实界面与来源。月历导出入口为 `scripts/render-website-previews.swift`；它与 `Sources/CalDock/CalendarView.swift`、`CalendarModel.swift` 和 CalendarCore 一起编译，输出 PNG 后退出。网站源码和本项目自有素材采用根目录的 MIT 许可。

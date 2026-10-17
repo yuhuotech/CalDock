@@ -9,7 +9,7 @@
     <title>CalDock — 一眼知日期，轻巧在菜单栏</title>
     <meta
       name="description"
-      content="免费开源的原生 macOS 菜单栏日历。紧凑月历、农历节气、官方调休、系统日程与桌面小组件，支持 Apple Silicon 和 Intel。"
+      content="免费开源的原生 macOS 菜单栏日历。紧凑月历、农历节气、官方调休，以及可直接同步系统日历事件和提醒事项的轻量日程面板。"
     />
     <link rel="canonical" href="https://caldock.yuhuotech.com/" />
     <link rel="icon" type="image/png" href="assets/app-icon.png" />
@@ -19,7 +19,7 @@
     <meta property="og:title" content="CalDock — 一眼知日期，轻巧在菜单栏" />
     <meta
       property="og:description"
-      content="公历、农历、节气与日程，随手可见。免费开源，为 macOS 原生打造。"
+      content="公历、农历、节气，以及系统事件与提醒，随手可见。免费开源，为 macOS 原生打造。"
     />
     <meta property="og:url" content="https://caldock.yuhuotech.com/" />
     <meta
@@ -77,7 +77,7 @@
           </p>
           <h1 id="hero-title">一眼知日期，<br /><span>轻巧在菜单栏。</span></h1>
           <p class="hero-description">
-            看农历、查调休、读日程。<br />想起时点一下，需要时就在手边。
+            看农历、查调休、读事件与提醒。<br />想起时点一下，需要时就在手边。
           </p>
           <div class="hero-actions">
             <a
@@ -152,7 +152,7 @@
           把屏幕留给工作，<br class="mobile-break" />把日子交给
           <em>CalDock。</em>
         </p>
-        <span class="strip-detail">轻巧 · 本地 · 随手可用</span>
+        <span class="strip-detail">轻巧 · 本地 · 系统日程联动</span>
       </section>
 
       <section
@@ -175,9 +175,9 @@
           </article>
           <article>
             <span class="feature-number">02 / 日程</span>
-            <h3>接上你已有的日程</h3>
+            <h3>系统日程，读写一体</h3>
             <p>
-              授权后读取系统日历，查看事件圆点与当天议程，也能筛选日历、创建事件。你的日程始终留在本机。
+              授权后读取系统日历事件和未完成提醒，查看事件圆点与当天议程，也能筛选日历。通过紧凑面板快速添加，或在条目右侧编辑、确认删除，变更直接同步回 macOS。
             </p>
           </article>
           <article>
@@ -236,7 +236,7 @@
               <div>
                 <dt>权限由你决定</dt>
                 <dd>
-                  日历、通知按需开启。不连接系统日历，也能使用月历、农历和节气。
+                  日历、提醒事项和通知按需开启。不连接系统日历，也能使用月历、农历和节气。
                 </dd>
               </div>
               <div>
@@ -308,6 +308,15 @@
             <p>
               无需注册 CalDock 账号。系统日程使用你在 macOS
               已配置的日历。内置 2026 年官方调休数据，每日白天自动检查当年与下一年安排，支持国内主备数据源和离线缓存；未收录年份不会猜测补班。节气提供日期，不提供精确交节时刻。
+            </p>
+          </details>
+          <details>
+            <summary>
+              CalDock 里的事件和提醒会同步到哪里？<span aria-hidden="true">+</span>
+            </summary>
+            <p>
+              它直接使用 macOS 的系统日历和提醒事项。授权后可以在 CalDock
+              里查看当天内容，并快速添加、编辑或删除；变更会同步回对应的系统列表，不会上传到 CalDock 的服务器。日历和提醒事项权限可以分别授权。
             </p>
           </details>
         </div>
