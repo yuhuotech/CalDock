@@ -145,6 +145,13 @@ final class PanelController: NSObject, NSWindowDelegate {
         }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, event.window === self.panel else { return event }
+            // Let text fields, date pickers and the popover's field editor
+            // consume their own keys; otherwise typing "A" triggers the
+            // agenda shortcut and resizes the panel under the editor.
+            if let responder = event.window?.firstResponder,
+               responder is NSTextView || responder is NSTextField || responder is NSSearchField {
+                return event
+            }
             if event.modifierFlags.contains(.command), event.charactersIgnoringModifiers == "," {
                 NotificationCenter.default.post(name: .calDockShowSettings, object: nil); return nil
             }
