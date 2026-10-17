@@ -8,6 +8,8 @@ struct CalendarView: View {
     @ObservedObject var provider = EventProvider.shared
     @Environment(\.colorScheme) private var colorScheme
     @State private var hoverDate: Date?
+    @State private var quickAddPresented = false
+    @State private var eventToDelete: CalendarEvent?
     private var p: AppPreferences { settings.value }
     private var dark: Bool { p.appearance == "dark" || (p.appearance == "system" && colorScheme == .dark) }
     private var palette: CalendarPalette { p.palette(dark: dark) }
@@ -142,6 +144,9 @@ struct CalendarView: View {
                 Text(StatusFormatter().string(model.selected, pattern: "M月d日 EEEE")).font(.system(size: 12, weight: .semibold))
                 Spacer()
                 if provider.loading { ProgressView().controlSize(.mini) }
+                Button { quickAddPresented = true } label: { Image(systemName: "plus") }
+                    .buttonStyle(.plain).help("快速添加事件或提醒")
+                    .popover(isPresented: $quickAddPresented, arrowEdge: .bottom) { QuickAddView(date: model.selected) }
                 Button { openSystemCalendar(model.selected) } label: { Image(systemName: "arrow.up.forward.app") }.buttonStyle(.plain).help("在系统日历中打开或添加事件")
                 Button { model.agendaVisible = false; model.resize?() } label: { Image(systemName: "xmark") }.buttonStyle(.plain).help("收起日程")
             }
@@ -167,11 +172,34 @@ struct CalendarView: View {
                                 }
                                 Spacer(minLength: 0)
                             }.fixedSize(horizontal: false, vertical: true)
+                                .contextMenu {
+                                    if event.eventIdentifier != nil && event.writable {
+                                        Button("删除事件", role: .destructive) { eventToDelete = event }
+                                    }
+                                }
                         }
                     }
                 }.frame(height: min(CGFloat(model.selectedEvents.count) * 51, 166))
             }
-        }.padding(.horizontal, 16).padding(.top, 5).padding(.bottom, 7)
+        }
+        .padding(.horizontal, 16).padding(.top, 5).padding(.bottom, 7)
+        .confirmationDialog("删除这个系统日历事件？", isPresented: Binding(
+            get: { eventToDelete != nil },
+            set: { if !$0 { eventToDelete = nil } }
+        ), titleVisibility: .visible) {
+            Button("删除", role: .destructive) {
+                if let event = eventToDelete { delete(event) }
+                eventToDelete = nil
+            }
+            Button("取消", role: .cancel) { eventToDelete = nil }
+        } message: {
+            Text("删除后会同步到 macOS 日历。")
+        }
+    }
+
+    private func delete(_ event: CalendarEvent) {
+        do { try provider.delete(event) }
+        catch { NSSound.beep() }
     }
 
     private var footer: some View {

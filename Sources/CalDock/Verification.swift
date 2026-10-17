@@ -160,7 +160,7 @@ enum Verification {
             record("panel.holiday-badges", holidayImage != nil && controller.panel.renderedPNG() != holidayImage)
             settings.value.showHolidayBadges = true
             let fixtureDate = controller.panel.model.days.first { $0.holiday?.kind == .work }?.date ?? Date()
-            let fixture = CalendarEvent(id: "verification", title: "本地渲染测试", start: fixtureDate, end: fixtureDate.addingTimeInterval(3600), allDay: false, location: "", color: .red, calendarTitle: "测试")
+            let fixture = CalendarEvent(id: "verification", eventIdentifier: nil, title: "本地渲染测试", start: fixtureDate, end: fixtureDate.addingTimeInterval(3600), allDay: false, location: "", color: .red, calendarTitle: "测试", writable: true)
             for dark in [false, true] {
                 settings.value.appearance = dark ? "dark" : "light"
                 for role in PaletteRole.allCases {

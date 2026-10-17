@@ -28,6 +28,7 @@
     <key>NSHighResolutionCapable</key><true/>
     <key>NSCalendarsFullAccessUsageDescription</key><string>CalDock 需要读取日历以显示事件圆点和日程，并在你确认创建时添加事件。日程仅在本机处理。</string>
     <key>NSCalendarsUsageDescription</key><string>在菜单栏日历中显示你的系统日历事件。</string>
+    <key>NSRemindersFullAccessUsageDescription</key><string>CalDock 需要访问提醒事项，以便在快速添加中创建系统提醒。</string>
     <key>CFBundleDevelopmentRegion</key><string>zh_CN</string>
     <key>CFBundleLocalizations</key><array><string>zh_CN</string><string>en</string></array>
     <key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>com.yuhuo.caldock</string><key>CFBundleURLSchemes</key><array><string>caldock</string></array></dict></array>

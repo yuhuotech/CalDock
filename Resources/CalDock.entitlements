@@ -3,4 +3,5 @@
 <plist version="1.0"><dict>
 <key>com.apple.security.application-groups</key><array><string>3BH46GJY6D.com.yuhuo.caldock</string></array>
 <key>com.apple.security.personal-information.calendars</key><true/>
+<key>com.apple.security.personal-information.reminders</key><true/>
 </dict></plist>

@@ -13,6 +13,7 @@ struct CalendarSource: Identifiable {
 
 struct CalendarEvent: Identifiable {
     let id: String
+    let eventIdentifier: String?
     let title: String
     let start: Date
     let end: Date
@@ -20,6 +21,7 @@ struct CalendarEvent: Identifiable {
     let location: String
     let color: Color
     let calendarTitle: String
+    let writable: Bool
 }
 
 // Each EventKit store stays on its owning queue; EK objects never cross queues.
@@ -37,10 +39,11 @@ private final class EventReader: @unchecked Sendable {
             let predicate = store.predicateForEvents(withStart: range.start, end: range.end, calendars: calendars)
             let matches = store.events(matching: predicate).sorted { $0.startDate < $1.startDate }
             completion(matches.enumerated().map { index, event in
-                CalendarEvent(id: "\(event.eventIdentifier ?? "event")-\(event.startDate.timeIntervalSince1970)-\(index)",
+                CalendarEvent(id: "\(event.eventIdentifier ?? "event")-\(event.startDate.timeIntervalSince1970)-\(index)", eventIdentifier: event.eventIdentifier,
                               title: event.title ?? "未命名事件", start: event.startDate, end: event.endDate,
                               allDay: event.isAllDay, location: event.location ?? "",
-                              color: Color(cgColor: event.calendar.cgColor), calendarTitle: event.calendar.title)
+                              color: Color(cgColor: event.calendar.cgColor), calendarTitle: event.calendar.title,
+                              writable: event.calendar.allowsContentModifications)
             })
         }
     }
@@ -158,13 +161,25 @@ final class EventProvider: ObservableObject {
         if let range = lastRange { load(range: range, disabled: lastDisabled, force: true) }
     }
 
+    func delete(_ event: CalendarEvent) throws {
+        guard authorized else { throw EventError.noAccess }
+        guard let identifier = event.eventIdentifier, let value = getStore().event(withIdentifier: identifier) else {
+            throw EventError.noEvent
+        }
+        guard value.calendar?.allowsContentModifications == true else { throw EventError.noCalendar }
+        try getStore().remove(value, span: .thisEvent, commit: true)
+        dirty = true
+        if let range = lastRange { load(range: range, disabled: lastDisabled, force: true) }
+    }
+
     enum EventError: LocalizedError {
-        case noAccess, invalidRange, noCalendar
+        case noAccess, invalidRange, noCalendar, noEvent
         var errorDescription: String? {
             switch self {
             case .noAccess: return "请先允许访问系统日历。"
             case .invalidRange: return "结束时间必须晚于开始时间。"
             case .noCalendar: return "请选择可写入的日历。"
+            case .noEvent: return "这个事件已在系统日历中被删除。"
             }
         }
     }
