@@ -359,7 +359,15 @@ struct SettingsView: View {
             HStack {
                 Text("拖拽或使用箭头调整模块顺序").font(.system(size: 12, weight: .medium))
                 Spacer()
-                Toggle("显示秒", isOn: p.showSeconds).toggleStyle(.checkbox)
+                Toggle("显示秒", isOn: Binding(
+                    get: { settings.value.showSeconds },
+                    set: { enabled in
+                        var value = settings.value
+                        value.showSeconds = enabled
+                        if enabled { value.setEnabled(.time, true) }
+                        settings.value = value
+                    }
+                )).toggleStyle(.checkbox)
             }
             settingsRow("图标颜色") {
                 Picker("", selection: p.iconMode) {
