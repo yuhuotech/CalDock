@@ -130,6 +130,9 @@ final class PanelController: NSObject, NSWindowDelegate {
     private func installMonitors() {
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
             guard let self else { return event }
+            // Events delivered by the calendar panel are always in-app
+            // interactions, even while the panel is being resized.
+            if event.window === self.panel { return event }
             let point = NSEvent.mouseLocation
             if self.shouldClose(at: point, window: event.window) { self.close() }
             return event

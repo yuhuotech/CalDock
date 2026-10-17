@@ -194,6 +194,14 @@ enum Verification {
             settings.value.showAgenda = true
             await settle()
             record("panel.agenda-setting", controller.panel.model.agendaVisible)
+            controller.panel.model.agendaVisible = false
+            controller.panel.model.requestResize()
+            await settle()
+            record("panel.agenda-hides-without-closing", !controller.panel.model.agendaVisible && controller.panel.visible)
+            settings.value.showAgenda = true
+            controller.panel.model.agendaVisible = true
+            controller.panel.model.requestResize()
+            await settle()
             settings.value.appearance = "dark"
             await settle()
             record("panel.dark-appearance", controller.panel.panel?.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua)

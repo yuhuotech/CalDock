@@ -246,6 +246,13 @@ final class CalendarModel: ObservableObject {
             .sink { [weak self] _ in if self?.active == true { self?.refresh() } }.store(in: &subscriptions)
     }
 
+    func requestResize() {
+        // Let SwiftUI finish the state update before measuring the hosting view.
+        // Synchronous measurement from a button action can re-enter layout and
+        // produce a zero-sized panel when the agenda is hidden.
+        DispatchQueue.main.async { [weak self] in self?.resize?() }
+    }
+
     func open() {
         clockChanged()
         active = true; provider.setActive(true)
@@ -299,7 +306,7 @@ final class CalendarModel: ObservableObject {
     func select(_ day: DayInfo) {
         selected = day.date
         if !day.inMonth { month = day.date; refresh() }
-        if !selectedEvents.isEmpty { agendaVisible = true; resize?() }
+        if !selectedEvents.isEmpty { agendaVisible = true; requestResize() }
     }
 
     func moveDay(_ amount: Int) {

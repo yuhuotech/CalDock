@@ -46,7 +46,7 @@ struct CalendarView: View {
             confirmingDeleteID = nil; agendaError = nil
             if model.agendaVisible { reminders.load(day: date) }
         }
-        .onChange(of: reminders.reminders.count) { _, _ in model.resize?() }
+        .onChange(of: reminders.reminders.count) { _, _ in model.requestResize() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             if model.agendaVisible { reminders.setActive(true, day: model.selected) }
         }
@@ -56,7 +56,7 @@ struct CalendarView: View {
         HStack(spacing: 5) {
             action("chevron.left", help: "上个月（←）；按住 Option 切换上一年") { model.moveMonth(NSEvent.modifierFlags.contains(.option) ? -12 : -1) }
             Spacer(minLength: 0)
-            Button { model.jumpVisible.toggle(); model.resize?() } label: {
+            Button { model.jumpVisible.toggle(); model.requestResize() } label: {
                 Text(StatusFormatter().string(model.month, pattern: "yyyy / MM"))
                     .font(.system(size: 19 * p.fontScale, weight: .semibold, design: .rounded))
                     .foregroundStyle(secondary).monospacedDigit()
@@ -142,7 +142,7 @@ struct CalendarView: View {
                 ForEach(1...12, id: \.self) { Text("\($0) 月").tag($0) }
             }.labelsHidden().frame(width: 95)
             Spacer()
-            Button("今天") { model.today(); model.jumpVisible = false; model.resize?() }
+            Button("今天") { model.today(); model.jumpVisible = false; model.requestResize() }
         }.controlSize(.small)
     }
 
@@ -168,7 +168,7 @@ struct CalendarView: View {
                         QuickAddView(date: model.selected, onClose: { quickAddPresented = false })
                     })
                 Button { openSystemCalendar(model.selected) } label: { Image(systemName: "arrow.up.forward.app") }.buttonStyle(.plain).help("在系统日历中打开或添加事件")
-                Button { model.agendaVisible = false; model.resize?() } label: { Image(systemName: "xmark") }.buttonStyle(.plain).help("收起日程")
+                Button { model.agendaVisible = false; model.requestResize() } label: { Image(systemName: "xmark") }.buttonStyle(.plain).help("收起日程")
             }
             if !provider.authorized {
                 HStack(spacing: 8) {
@@ -239,7 +239,7 @@ struct CalendarView: View {
             if confirmingDeleteID == id {
                 Button("删除") {
                     do { try delete(); confirmingDeleteID = nil; agendaError = nil }
-                    catch { agendaError = error.localizedDescription; model.resize?() }
+                    catch { agendaError = error.localizedDescription; model.requestResize() }
                 }.foregroundStyle(.red).help("确认删除" + label + "，同步到系统")
                 Button { confirmingDeleteID = nil } label: { Image(systemName: "xmark").frame(width: 18, height: 20) }
                     .help("取消删除")
@@ -263,7 +263,7 @@ struct CalendarView: View {
             }.buttonStyle(.plain).help("回到今天（空格）")
             Spacer(minLength: 0)
             action(model.agendaVisible ? "list.bullet.rectangle.fill" : "list.bullet.rectangle", help: "显示或隐藏日程") {
-                model.agendaVisible.toggle(); model.resize?()
+                model.agendaVisible.toggle(); model.requestResize()
             }
             action(model.isPinned ? "pin.fill" : "pin", help: "固定面板；按 Esc 仍可关闭") { model.isPinned.toggle() }
         }.foregroundStyle(secondary).padding(.horizontal, 14)
