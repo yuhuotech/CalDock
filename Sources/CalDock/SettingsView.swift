@@ -359,15 +359,6 @@ struct SettingsView: View {
             HStack {
                 Text("拖拽或使用箭头调整模块顺序").font(.system(size: 12, weight: .medium))
                 Spacer()
-                Toggle("显示秒", isOn: Binding(
-                    get: { settings.value.showSeconds },
-                    set: { enabled in
-                        var value = settings.value
-                        value.showSeconds = enabled
-                        if enabled { value.setEnabled(.time, true) }
-                        settings.value = value
-                    }
-                )).toggleStyle(.checkbox)
             }
             settingsRow("图标颜色") {
                 Picker("", selection: p.iconMode) {
@@ -387,7 +378,7 @@ struct SettingsView: View {
                             Button { move(module, by: -1) } label: { Image(systemName: "chevron.up").font(.system(size: 8)) }
                             Button { move(module, by: 1) } label: { Image(systemName: "chevron.down").font(.system(size: 8)) }
                         }.buttonStyle(.plain).foregroundStyle(.secondary)
-                    }.frame(height: 32).contentShape(Rectangle())
+                    }.frame(height: module == .time ? 52 : 32).contentShape(Rectangle())
                         .onDrag { draggingModule = module; return NSItemProvider(object: module.rawValue as NSString) }
                         .onDrop(of: [.text], delegate: ModuleDropDelegate(target: module, dragging: $draggingModule, settings: settings))
                     Divider()
@@ -416,7 +407,21 @@ struct SettingsView: View {
             Picker("", selection: p.lunarFormat) { Text("初七").tag("day"); Text("九月初七").tag("full") }.labelsHidden()
         case .weekday: Text("周五").font(.system(size: 12)).foregroundStyle(.secondary)
         case .time:
-            Picker("", selection: p.timeFormat) { Text("24 小时制").tag("24"); Text("12 小时制").tag("12") }.labelsHidden()
+            VStack(alignment: .leading, spacing: 3) {
+                Picker("", selection: p.timeFormat) {
+                    Text("24 小时制").tag("24"); Text("12 小时制").tag("12")
+                }.labelsHidden()
+                Toggle("显示秒", isOn: Binding(
+                    get: { settings.value.showSeconds },
+                    set: { enabled in
+                        var value = settings.value
+                        value.showSeconds = enabled
+                        if enabled { value.setEnabled(.time, true) }
+                        settings.value = value
+                    }
+                )).toggleStyle(.checkbox).font(.system(size: 11))
+                    .disabled(!settings.value.enabledModules.contains(.time))
+            }
         case .custom: TextField("yyyy-MM-dd", text: p.customFormat).textFieldStyle(.roundedBorder).help("Unicode 日期格式，例如 yyyy-MM-dd EEEE HH:mm")
         }
     }
