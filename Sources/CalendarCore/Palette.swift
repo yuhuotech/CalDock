@@ -63,11 +63,20 @@ public extension AppPreferences {
 }
 
 public enum SharedPreferences {
+#if CALDOCK_DEV_BUILD
+    public static let groupID = "3BH46GJY6D.com.yuhuo.caldock.local"
+#else
     public static let groupID = "3BH46GJY6D.com.yuhuo.caldock"
+#endif
     public static let widgetKind = "CalDock.MonthCalendar"
     public static var fileURL: URL? {
+#if CALDOCK_DEV_BUILD
+        return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("CalDock-Local/Shared/preferences.json")
+#else
         FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)?
             .appendingPathComponent("Library/Application Support/CalDock/preferences.json")
+#endif
     }
     public static func read() -> AppPreferences {
         guard let url = fileURL, let data = try? Data(contentsOf: url),

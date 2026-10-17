@@ -10,7 +10,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         controller = StatusItemController()
         let args = ProcessInfo.processInfo.arguments
         if !args.contains("--verify-settings") && !args.contains("--verify-system") {
+#if !CALDOCK_DEV_BUILD
             SoftwareUpdater.shared.start()
+#endif
             HolidayUpdater.shared.start()
         }
         if let index = args.firstIndex(of: "--verify-settings") ?? args.firstIndex(of: "--verify-system"), args.count > index + 1, let controller {
@@ -30,7 +32,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
     func application(_ application: NSApplication, open urls: [URL]) {
+#if CALDOCK_DEV_BUILD
+        guard urls.contains(where: { $0.scheme == "caldock-local" }) else { return }
+#else
         guard urls.contains(where: { $0.scheme == "caldock" }) else { return }
+#endif
         controller?.panel.model.today()
         controller?.openPanel()
     }
