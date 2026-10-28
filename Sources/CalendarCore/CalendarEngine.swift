@@ -27,6 +27,16 @@ public struct CalendarEngine {
     public var calendar: Calendar
     private var chinese: Calendar
 
+    /// Reopening within this window keeps the month the user was browsing.
+    public static let reopenGraceInterval: TimeInterval = 300
+
+    /// Whether a reopened panel should jump back to today instead of the last browsed month.
+    public func shouldResetToToday(closedAt: Date?, now: Date) -> Bool {
+        guard let closedAt else { return true }
+        return now.timeIntervalSince(closedAt) > Self.reopenGraceInterval
+            || !calendar.isDate(closedAt, inSameDayAs: now)
+    }
+
     public init(timeZone: TimeZone = .current, firstWeekday: Int = 1) {
         var cal = Calendar(identifier: .gregorian)
         cal.locale = Locale(identifier: "zh_CN")

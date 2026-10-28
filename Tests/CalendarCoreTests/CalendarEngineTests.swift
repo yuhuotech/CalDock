@@ -8,6 +8,16 @@ final class CalendarEngineTests: XCTestCase {
         engine.calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
     }
 
+    func testReopenResetsToTodayOnlyAfterGraceInterval() {
+        let closed = date(2026, 10, 16)
+        XCTAssertTrue(engine.shouldResetToToday(closedAt: nil, now: closed))
+        XCTAssertFalse(engine.shouldResetToToday(closedAt: closed, now: closed.addingTimeInterval(60)))
+        XCTAssertFalse(engine.shouldResetToToday(closedAt: closed, now: closed.addingTimeInterval(300)))
+        XCTAssertTrue(engine.shouldResetToToday(closedAt: closed, now: closed.addingTimeInterval(301)))
+        let late = engine.calendar.date(from: DateComponents(year: 2026, month: 10, day: 16, hour: 23, minute: 59))!
+        XCTAssertTrue(engine.shouldResetToToday(closedAt: late, now: late.addingTimeInterval(120)))
+    }
+
     func testReferenceOctober2026GridAndLunar() {
         let days = engine.monthGrid(date(2026, 10, 16))
         XCTAssertEqual(days.count, 42)

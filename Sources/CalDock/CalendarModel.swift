@@ -237,6 +237,7 @@ final class CalendarModel: ObservableObject {
     var engine: CalendarEngine { CalendarEngine(firstWeekday: settings.value.firstWeekday) }
     private var subscriptions = Set<AnyCancellable>()
     var active = false
+    private var closedAt: Date?
     var resize: (() -> Void)?
     private var previousToday = Calendar.current.startOfDay(for: Date())
 
@@ -255,12 +256,15 @@ final class CalendarModel: ObservableObject {
 
     func open() {
         clockChanged()
+        if engine.shouldResetToToday(closedAt: closedAt, now: Date()) {
+            month = Date(); selected = Date()
+        }
         active = true; provider.setActive(true)
         agendaVisible = settings.value.showAgenda
         refresh()
     }
 
-    func close() { active = false; provider.setActive(false); jumpVisible = false }
+    func close() { active = false; provider.setActive(false); jumpVisible = false; closedAt = Date() }
 
     func refresh() {
         days = engine.monthGrid(month)
